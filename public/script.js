@@ -1,4 +1,4 @@
-cat > /home/claude/tempmail/public/script.js << 'JSEOF'
+
 // ===== KingBadBoi Tech TempMail =====
 
 const API = '';
@@ -383,5 +383,4 @@ function clearAutoRefresh() {
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-JSEOF
-echo "script.js done"
+
