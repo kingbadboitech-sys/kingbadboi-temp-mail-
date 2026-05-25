@@ -4,117 +4,94 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MAIL_TM_API = 'https://api.mail.tm';
+const BASE = 'https://api.mail.tm';
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Get available domains
+async function proxy(url, options) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch(e) { data = { error: text }; }
+  return { status: res.status, data };
+}
+
 app.get('/api/domains', async (req, res) => {
   try {
-    const response = await fetch(MAIL_TM_API + '/domains');
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch domains' });
-  }
+    const { status, data } = await proxy(BASE + '/domains?page=1');
+    res.status(status).json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Create a new account
 app.post('/api/accounts', async (req, res) => {
   try {
-    const { address, password } = req.body;
-    const response = await fetch(MAIL_TM_API + '/accounts', {
+    const { status, data } = await proxy(BASE + '/accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, password })
+      body: JSON.stringify(req.body)
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create account' });
-  }
+    res.status(status).json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Get token (login)
 app.post('/api/token', async (req, res) => {
   try {
-    const { address, password } = req.body;
-    const response = await fetch(MAIL_TM_API + '/token', {
+    const { status, data } = await proxy(BASE + '/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address, password })
+      body: JSON.stringify(req.body)
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to get token' });
-  }
+    res.status(status).json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Get messages
 app.get('/api/messages', async (req, res) => {
   try {
-    const token = req.headers['authorization'];
+    const auth = req.headers['authorization'] || '';
     const page = req.query.page || 1;
-    const response = await fetch(MAIL_TM_API + '/messages?page=' + page, {
-      headers: { 'Authorization': token }
+    const { status, data } = await proxy(BASE + '/messages?page=' + page, {
+      headers: { 'Authorization': auth }
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch messages' });
-  }
+    res.status(status).json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Get single message
 app.get('/api/messages/:id', async (req, res) => {
   try {
-    const token = req.headers['authorization'];
-    const response = await fetch(MAIL_TM_API + '/messages/' + req.params.id, {
-      headers: { 'Authorization': token }
+    const auth = req.headers['authorization'] || '';
+    const { status, data } = await proxy(BASE + '/messages/' + req.params.id, {
+      headers: { 'Authorization': auth }
     });
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch message' });
-  }
+    res.status(status).json(data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Delete message
 app.delete('/api/messages/:id', async (req, res) => {
   try {
-    const token = req.headers['authorization'];
-    const response = await fetch(MAIL_TM_API + '/messages/' + req.params.id, {
+    const auth = req.headers['authorization'] || '';
+    const r = await fetch(BASE + '/messages/' + req.params.id, {
       method: 'DELETE',
-      headers: { 'Authorization': token }
+      headers: { 'Authorization': auth }
     });
-    res.status(response.status).json({ success: response.ok });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete message' });
-  }
+    res.status(r.status).json({ ok: r.ok });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Delete account
 app.delete('/api/accounts/:id', async (req, res) => {
   try {
-    const token = req.headers['authorization'];
-    const response = await fetch(MAIL_TM_API + '/accounts/' + req.params.id, {
+    const auth = req.headers['authorization'] || '';
+    const r = await fetch(BASE + '/accounts/' + req.params.id, {
       method: 'DELETE',
-      headers: { 'Authorization': token }
+      headers: { 'Authorization': auth }
     });
-    res.status(response.status).json({ success: response.ok });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete account' });
-  }
+    res.status(r.status).json({ ok: r.ok });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Catch-all route
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, function() {
-  console.log('KingBadBoi TempMail running on port ' + PORT);
-});
+app.listen(PORT, () => console.log('KingBadBoi TempMail on port ' + PORT));
