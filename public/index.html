@@ -1,131 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KingBadBoi Tech — Shadow Ninja TempMail</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KingBadBoi TempMail – Shadow Ninja Edition</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-  <!-- Follow Modal -->
-  <div id="followModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-crown">👑</div>
-      <h2 class="modal-title">KingBadBoi Tech</h2>
-      <p class="modal-sub">Follow our WhatsApp Channel first to unlock full access!</p>
-      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-btn">
-        <i class="fab fa-whatsapp"></i> Follow Channel Now
+  <!-- Particle Canvas -->
+  <canvas id="particles"></canvas>
+
+  <!-- Follow Gate Overlay -->
+  <div id="follow-gate" class="gate-overlay">
+    <div class="gate-box">
+      <div class="gate-ninja">🥷</div>
+      <h2 class="gate-title">SHADOW NINJA ZONE</h2>
+      <p class="gate-sub">You must join the KingBadBoi channel before you can enter.</p>
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="follow-btn" id="follow-link">
+        <span>📢</span> Follow Channel on WhatsApp
       </a>
-      <button id="followedBtn" class="followed-btn">✓ I've Followed — Enter Site</button>
-      <p class="modal-note">100% Free · No registration · No spam 💚</p>
+      <button class="enter-btn" id="enter-btn">I've Followed — Enter Site</button>
     </div>
   </div>
 
-  <!-- Header -->
-  <header>
-    <div class="header-inner">
-      <div class="logo">
-        <span class="crown">👑</span>
-        <div>
-          <span class="logo-king">KingBadBoi</span>
-          <span class="logo-tech">TECH · SHADOW NINJA MAIL</span>
-        </div>
-      </div>
-      <div class="header-tag"><i class="fas fa-user-ninja"></i> NINJA</div>
-    </div>
-    <div class="scan-line"></div>
-  </header>
+  <!-- Main Site -->
+  <div id="main-site" class="hidden">
 
-  <main>
-
-    <!-- Domain bar -->
-    <div class="domains-bar">
-      <span class="domains-label"><i class="fas fa-globe"></i> Live Domains:</span>
-      <div id="domainList" class="domain-list">
-        <span class="dtag-dim">Connecting...</span>
-      </div>
-    </div>
-
-    <!-- Generator card -->
-    <section class="section">
-      <div class="section-label"><i class="fas fa-user-secret"></i> GENERATE SHADOW IDENTITY</div>
-      <div class="card">
-
-        <div class="field-label"><i class="fas fa-user"></i> FULL NAME (US)</div>
-        <div class="row-wrap">
-          <div id="nameDisplay" class="display-box dim">Your name will appear here</div>
-          <button id="copyNameBtn" class="icon-btn" disabled title="Copy Name"><i class="far fa-copy"></i></button>
-        </div>
-
-        <div class="field-label" style="margin-top:14px"><i class="fas fa-envelope"></i> EMAIL ADDRESS</div>
-        <div class="row-wrap">
-          <div id="emailDisplay" class="display-box dim">Click Generate to create your email</div>
-          <button id="copyBtn" class="icon-btn" disabled title="Copy Email"><i class="far fa-copy"></i></button>
-        </div>
-
-        <div class="hint-box">
-          <i class="fas fa-lightbulb"></i>
-          Use the <strong>name</strong> and <strong>email</strong> together when signing up — then wait for your verification code to appear in the inbox below.
-        </div>
-
-        <div class="btn-row">
-          <button id="generateBtn" class="btn-primary"><i class="fas fa-magic"></i> Generate</button>
-          <button id="refreshBtn" class="btn-gold" disabled><i class="fas fa-sync-alt"></i> New Identity</button>
-          <button id="deleteBtn" class="btn-red" disabled><i class="fas fa-trash"></i> Delete</button>
-        </div>
-
-        <div id="statusMsg" class="status-msg"></div>
-      </div>
-    </section>
-
-    <!-- Inbox -->
-    <section id="inboxSection" class="section hidden">
-      <div class="section-label">
-        <span><i class="fas fa-inbox"></i> INBOX</span>
-        <div class="inbox-right">
-          <span id="msgCount" class="badge">0 messages</span>
-          <button id="inboxRefreshBtn" class="btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
-        </div>
-      </div>
-      <div class="auto-note"><i class="fas fa-bolt"></i> Auto-checks every 6 seconds · Verification codes are highlighted when they arrive</div>
-      <div id="messageList" class="msg-list">
-        <div class="empty-box">
-          <i class="fas fa-envelope-open"></i>
-          <p>Inbox empty<br>Sign up somewhere with the email above and your verification code will appear here.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Message Modal -->
-    <div id="msgModal" class="overlay hidden">
-      <div class="modal-inner">
-        <div class="modal-head">
-          <div class="modal-head-info">
-            <div id="mSubject" class="m-subject"></div>
-            <div id="mFrom" class="m-from"></div>
-            <div id="mDate" class="m-date"></div>
+    <!-- Header -->
+    <header>
+      <div class="header-inner">
+        <div class="logo-area">
+          <span class="logo-icon">🥷</span>
+          <div>
+            <div class="logo-title">KINGBADBOI</div>
+            <div class="logo-sub">SHADOW NINJA TEMPMAIL</div>
           </div>
-          <button id="closeMsgBtn" class="close-btn"><i class="fas fa-times"></i></button>
         </div>
-        <div id="mBody" class="m-body"></div>
-        <div class="modal-foot">
-          <button id="deleteMsgBtn" class="btn-red"><i class="fas fa-trash"></i> Delete Message</button>
+        <div class="visitor-badge">
+          <span class="visitor-icon">👁</span>
+          <span id="visitor-count">0</span> visitors
         </div>
       </div>
+    </header>
+
+    <!-- Powered By Banner -->
+    <div class="powered-bar">
+      ⚡ Powered by <a href="https://tempmail.ninja" target="_blank">TempMail Ninja</a> &nbsp;|&nbsp; Shadow Ninja Edition &nbsp;|&nbsp; 100% Anonymous
     </div>
 
-  </main>
+    <!-- Hero -->
+    <main>
+      <section class="hero">
+        <div class="hero-tag">SHADOW NINJA TEMPMAIL</div>
+        <h1 class="hero-title">DISPOSABLE EMAIL<br /><span class="accent">LIKE A NINJA</span></h1>
+        <p class="hero-desc">Instant. Anonymous. No registration. Powered by TempMail Ninja's Shadow-tier domains — trusted, clean, and undetectable.</p>
+      </section>
 
-  <footer>
-    <p>👑 <strong>KingBadBoi Tech</strong> · Shadow Ninja TempMail &nbsp;·&nbsp;
-      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">
-        <i class="fab fa-whatsapp"></i> Follow on WhatsApp
-      </a>
-    </p>
-  </footer>
+      <!-- Email Card -->
+      <div class="email-card">
+        <div class="card-header">
+          <span class="card-label">YOUR SHADOW NINJA EMAIL</span>
+          <span class="card-ninja-rank">⚡ SHADOW TIER</span>
+        </div>
+        <div class="email-display-wrap">
+          <div class="email-display" id="email-display">
+            <span class="email-placeholder">Click GENERATE to get your email</span>
+          </div>
+          <button class="copy-btn" id="copy-btn" title="Copy email" style="display:none">📋</button>
+        </div>
+        <div class="card-actions">
+          <button class="btn-generate" id="generate-btn">
+            <span class="btn-icon">⚡</span> GENERATE EMAIL
+          </button>
+          <button class="btn-inbox" id="inbox-btn" disabled>
+            <span class="btn-icon">📬</span> CHECK INBOX
+          </button>
+        </div>
+        <div class="email-meta" id="email-meta"></div>
+      </div>
+
+      <!-- Inbox Panel -->
+      <div class="inbox-panel hidden" id="inbox-panel">
+        <div class="inbox-header">
+          <span class="inbox-title">📬 INBOX</span>
+          <span class="inbox-email-tag" id="inbox-tag"></span>
+          <button class="refresh-btn" id="refresh-btn">🔄 Refresh</button>
+        </div>
+        <div id="inbox-list">
+          <div class="inbox-empty">
+            <div class="empty-icon">🕵️</div>
+            <div>No messages yet. Waiting in the shadows...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Modal -->
+      <div class="modal-overlay hidden" id="msg-modal">
+        <div class="modal-box">
+          <button class="modal-close" id="modal-close">✕</button>
+          <div class="modal-from" id="modal-from"></div>
+          <div class="modal-subject" id="modal-subject"></div>
+          <div class="modal-date" id="modal-date"></div>
+          <hr class="modal-hr" />
+          <div class="modal-body" id="modal-body"></div>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <section class="features">
+        <div class="feature-card">
+          <div class="feature-icon">🥷</div>
+          <div class="feature-title">Shadow Tier Domain</div>
+          <div class="feature-desc">High-reputation .org & .com domains — bypasses spam filters effortlessly</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Instant Generation</div>
+          <div class="feature-desc">One click. No signup. No data required. Pure ninja speed.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-title">Zero Trace</div>
+          <div class="feature-desc">Auto-cleanup after use. Your digital footprint vanishes like smoke.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📡</div>
+          <div class="feature-title">Real-time Inbox</div>
+          <div class="feature-desc">Check emails live. OTPs, verifications, links — all delivered instantly.</div>
+        </div>
+      </section>
+
+      <!-- Channel CTA -->
+      <div class="cta-strip">
+        <span>🔔 Stay updated — Join the KingBadBoi WhatsApp Channel</span>
+        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="cta-link">Follow Now →</a>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-logo">🥷 KINGBADBOI SHADOW NINJA TEMPMAIL</div>
+      <div class="footer-sub">Powered by <a href="https://tempmail.ninja" target="_blank">tempmail.ninja</a></div>
+      <div class="footer-links">
+        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📢 WhatsApp Channel</a>
+      </div>
+    </footer>
+
+  </div>
 
   <script src="script.js"></script>
 </body>
