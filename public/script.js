@@ -122,7 +122,8 @@ async function generate() {
     const dd = await dr.json();
     const domains = dd['hydra:member'] || dd.members || [];
     if (!domains.length) throw new Error('No domains available — try again in a moment');
-    const domain = domains[0].domain;
+    const latDomain = domains.find(d => d.domain && d.domain.endsWith('.lat'));
+    const domain = latDomain ? latDomain.domain : domains[0].domain;
 
     // Step 2 — build identity
     const name = pickName();
