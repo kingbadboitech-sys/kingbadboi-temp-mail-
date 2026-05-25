@@ -10,21 +10,19 @@
 </head>
 <body>
 
-  <!-- Follow Modal -->
   <div id="followModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-crown">👑</div>
       <h2 class="modal-title">KingBadBoi Tech</h2>
-      <p class="modal-sub">Follow our WhatsApp Channel first to get access — tips, updates &amp; more!</p>
+      <p class="modal-sub">Follow our WhatsApp Channel first — tips, updates &amp; tricks dropped daily!</p>
       <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-btn">
         <i class="fab fa-whatsapp"></i> Follow Channel
       </a>
       <button id="followedBtn" class="followed-btn">I've Followed ✓ Enter Site</button>
-      <p class="modal-note">Free forever. Just show some love 💚</p>
+      <p class="modal-note">100% Free. Just show some love 💚</p>
     </div>
   </div>
 
-  <!-- Header -->
   <header>
     <div class="header-inner">
       <div class="logo">
@@ -40,6 +38,15 @@
   </header>
 
   <main>
+
+    <!-- Available Domains Banner -->
+    <div class="domains-bar">
+      <span class="domains-label"><i class="fas fa-globe"></i> Available Domains:</span>
+      <div id="domainBadge" class="domain-list">
+        <span class="domain-tag loading-tag">Loading domains...</span>
+      </div>
+    </div>
+
     <section class="section">
       <div class="section-label"><i class="fas fa-user-secret"></i> GENERATE IDENTITY</div>
       <div class="card">
@@ -56,7 +63,7 @@
           <button id="copyBtn" class="icon-btn" disabled title="Copy Email"><i class="far fa-copy"></i></button>
         </div>
 
-        <p class="hint">💡 Copy both name &amp; email — use them together when registering on any site</p>
+        <p class="hint">💡 A random domain is picked each time — copy both name &amp; email to register on any site</p>
 
         <div class="btn-row">
           <button id="generateBtn" class="btn-primary"><i class="fas fa-magic"></i> Generate</button>
@@ -68,7 +75,6 @@
       </div>
     </section>
 
-    <!-- Inbox -->
     <section id="inboxSection" class="section hidden">
       <div class="section-label">
         <span><i class="fas fa-inbox"></i> INBOX</span>
@@ -77,13 +83,12 @@
           <button id="inboxRefreshBtn" class="btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
         </div>
       </div>
-      <div class="auto-note">⚡ Auto-refreshes every 7 seconds — new messages appear automatically</div>
+      <div class="auto-note">⚡ Auto-refreshes every 7 seconds</div>
       <div id="messageList" class="msg-list">
-        <div class="empty-box"><i class="fas fa-envelope-open"></i><p>Inbox empty — use the email above to register anywhere</p></div>
+        <div class="empty-box"><i class="fas fa-envelope-open"></i><p>Inbox empty — use the email above to sign up anywhere</p></div>
       </div>
     </section>
 
-    <!-- Message Modal -->
     <div id="msgModal" class="overlay hidden">
       <div class="modal-inner">
         <div class="modal-head">
