@@ -1,100 +1,85 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const BASE = 'https://api.mail.tm';
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-async function mtFetch(url, opts) {
-  opts = opts || {};
-  const res = await fetch(url, opts);
-  const text = await res.text();
-  let data;
-  try { data = JSON.parse(text); } catch(e) { data = { error: text }; }
-  return { status: res.status, ok: res.ok, data };
-}
+// Visitor count per device tracked client-side via localStorage
+// Server keeps a simple in-memory total counter
+let totalVisitors = 0;
+const visitedDevices = new Set();
 
-app.get('/api/domains', async (req, res) => {
-  try {
-    const r1 = await mtFetch(BASE + '/domains?page=1');
-    const r2 = await mtFetch(BASE + '/domains?page=2');
-    const all = [
-      ...(r1.data['hydra:member'] || []),
-      ...(r2.data['hydra:member'] || [])
-    ];
-    res.json({ domains: all });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+app.post("/api/visit", (req, res) => {
+  const { deviceId } = req.body;
+  if (deviceId && !visitedDevices.has(deviceId)) {
+    visitedDevices.add(deviceId);
+    totalVisitors++;
+  }
+  res.json({ total: totalVisitors, unique: visitedDevices.size });
 });
 
-app.post('/api/accounts', async (req, res) => {
+app.get("/api/visitors", (req, res) => {
+  res.json({ total: totalVisitors, unique: visitedDevices.size });
+});
+
+// Proxy: Generate a new temp email via Guerrilla Mail
+app.get("/api/generate", async (req, res) => {
   try {
-    const r = await mtFetch(BASE + '/accounts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body)
+    const fetch = (await import("node-fetch")).default;
+    const response = await fetch(
+      "https://api.guerrillamail.com/ajax.php?f=get_email_address&lang=en&site=guerrillamail.info&ref_mid=&cm=0"
+    );
+    const data = await response.json();
+    res.json({
+      email: data.email_addr,
+      token: data.sid_token,
+      timestamp: data.email_timestamp,
     });
-    res.status(r.status).json(r.data);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch (err) {
+    console.error("Generate error:", err);
+    res.status(500).json({ error: "Failed to generate email" });
+  }
 });
 
-app.post('/api/token', async (req, res) => {
+// Proxy: Check inbox for given token
+app.get("/api/inbox", async (req, res) => {
+  const { token, seq } = req.query;
+  if (!token) return res.status(400).json({ error: "Missing token" });
   try {
-    const r = await mtFetch(BASE + '/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body)
-    });
-    res.status(r.status).json(r.data);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+    const fetch = (await import("node-fetch")).default;
+    const response = await fetch(
+      `https://api.guerrillamail.com/ajax.php?f=check_email&seq=${seq || 0}&sid_token=${token}`
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Inbox error:", err);
+    res.status(500).json({ error: "Failed to check inbox" });
+  }
 });
 
-app.get('/api/messages', async (req, res) => {
+// Proxy: Get a single message
+app.get("/api/message", async (req, res) => {
+  const { token, id } = req.query;
+  if (!token || !id) return res.status(400).json({ error: "Missing params" });
   try {
-    const auth = req.headers['authorization'] || '';
-    const r = await mtFetch(BASE + '/messages?page=1', {
-      headers: { 'Authorization': auth }
-    });
-    res.status(r.status).json(r.data);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+    const fetch = (await import("node-fetch")).default;
+    const response = await fetch(
+      `https://api.guerrillamail.com/ajax.php?f=fetch_email&email_id=${id}&sid_token=${token}`
+    );
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Message error:", err);
+    res.status(500).json({ error: "Failed to fetch message" });
+  }
 });
 
-app.get('/api/messages/:id', async (req, res) => {
-  try {
-    const auth = req.headers['authorization'] || '';
-    const r = await mtFetch(BASE + '/messages/' + req.params.id, {
-      headers: { 'Authorization': auth }
-    });
-    res.status(r.status).json(r.data);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+app.listen(PORT, () => {
+  console.log(`🥷 KingBadBoi TempMail running on http://localhost:${PORT}`);
 });
-
-app.delete('/api/messages/:id', async (req, res) => {
-  try {
-    const auth = req.headers['authorization'] || '';
-    const r = await fetch(BASE + '/messages/' + req.params.id, {
-      method: 'DELETE', headers: { 'Authorization': auth }
-    });
-    res.status(r.status).json({ ok: r.ok });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.delete('/api/accounts/:id', async (req, res) => {
-  try {
-    const auth = req.headers['authorization'] || '';
-    const r = await fetch(BASE + '/accounts/' + req.params.id, {
-      method: 'DELETE', headers: { 'Authorization': auth }
-    });
-    res.status(r.status).json({ ok: r.ok });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, () => console.log('KingBadBoi TempMail running on port ' + PORT));
