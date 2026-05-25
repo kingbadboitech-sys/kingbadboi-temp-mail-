@@ -1,27 +1,25 @@
-HTMLEOF'
-<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KingBadBoi Tech TempMail</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
 
-  <!-- WhatsApp Follow Modal -->
+  <!-- Follow Modal -->
   <div id="followModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-crown">👑</div>
       <h2 class="modal-title">KingBadBoi Tech</h2>
-      <p class="modal-sub">Follow our WhatsApp Channel before you use this site — get updates, tips &amp; tricks!</p>
+      <p class="modal-sub">Follow our WhatsApp Channel first to get access — tips, updates &amp; more!</p>
       <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-btn">
         <i class="fab fa-whatsapp"></i> Follow Channel
       </a>
-      <button id="followedBtn" class="followed-btn">I've Followed ✓</button>
-      <p class="modal-note">100% Free. Just show some love 💚</p>
+      <button id="followedBtn" class="followed-btn">I've Followed ✓ Enter Site</button>
+      <p class="modal-note">Free forever. Just show some love 💚</p>
     </div>
   </div>
 
@@ -41,35 +39,28 @@ HTMLEOF'
   </header>
 
   <main>
-    <!-- Generator -->
-    <section id="generatorSection" class="section">
-      <div class="section-label"><i class="fas fa-bolt"></i> GENERATE IDENTITY</div>
-      <div class="email-card">
+    <section class="section">
+      <div class="section-label"><i class="fas fa-user-secret"></i> GENERATE IDENTITY</div>
+      <div class="card">
 
-        <!-- Name Row -->
-        <div class="field-label">FULL NAME</div>
-        <div class="email-display-wrap" style="margin-bottom:10px">
-          <div id="nameDisplay" class="email-display name-display">Generate to get a name</div>
-          <button id="copyNameBtn" class="icon-btn" title="Copy Name" disabled>
-            <i class="far fa-copy"></i>
-          </button>
+        <div class="field-label"><i class="fas fa-user"></i> FULL NAME</div>
+        <div class="row-wrap">
+          <div id="nameDisplay" class="display-box dim">Click Generate below</div>
+          <button id="copyNameBtn" class="icon-btn" disabled title="Copy Name"><i class="far fa-copy"></i></button>
         </div>
 
-        <!-- Email Row -->
-        <div class="field-label">EMAIL ADDRESS</div>
-        <div class="email-display-wrap">
-          <div id="emailDisplay" class="email-display">Generate to get your email</div>
-          <button id="copyBtn" class="icon-btn" title="Copy Email" disabled>
-            <i class="far fa-copy"></i>
-          </button>
+        <div class="field-label" style="margin-top:14px"><i class="fas fa-envelope"></i> EMAIL ADDRESS</div>
+        <div class="row-wrap">
+          <div id="emailDisplay" class="display-box dim">Click Generate below</div>
+          <button id="copyBtn" class="icon-btn" disabled title="Copy Email"><i class="far fa-copy"></i></button>
         </div>
 
-        <div class="hint-text">💡 Use the name &amp; email together when signing up on any site</div>
+        <p class="hint">💡 Copy both name &amp; email — use them together when registering on any site</p>
 
         <div class="btn-row">
-          <button id="generateBtn" class="primary-btn"><i class="fas fa-magic"></i> Generate</button>
-          <button id="refreshBtn" class="secondary-btn" disabled><i class="fas fa-sync-alt"></i> New Identity</button>
-          <button id="deleteBtn" class="danger-btn" disabled><i class="fas fa-trash"></i> Delete</button>
+          <button id="generateBtn" class="btn-primary"><i class="fas fa-magic"></i> Generate</button>
+          <button id="refreshBtn" class="btn-gold" disabled><i class="fas fa-sync-alt"></i> New Identity</button>
+          <button id="deleteBtn" class="btn-red" disabled><i class="fas fa-trash"></i> Delete</button>
         </div>
 
         <div id="statusMsg" class="status-msg"></div>
@@ -80,44 +71,42 @@ HTMLEOF'
     <section id="inboxSection" class="section hidden">
       <div class="section-label">
         <span><i class="fas fa-inbox"></i> INBOX</span>
-        <div class="inbox-controls">
-          <span id="msgCount" class="msg-count">0 messages</span>
-          <button id="inboxRefreshBtn" class="small-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="msgCount" class="badge">0 messages</span>
+          <button id="inboxRefreshBtn" class="btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
         </div>
       </div>
-      <div class="auto-refresh-note">⚡ Auto-refreshes every 8 seconds</div>
-      <div id="messageList" class="message-list">
-        <div class="empty-inbox">
-          <i class="fas fa-envelope-open"></i>
-          <p>Inbox empty — use the email above to register anywhere.</p>
-        </div>
+      <div class="auto-note">⚡ Auto-refreshes every 7 seconds — new messages appear automatically</div>
+      <div id="messageList" class="msg-list">
+        <div class="empty-box"><i class="fas fa-envelope-open"></i><p>Inbox empty — use the email above to register anywhere</p></div>
       </div>
     </section>
 
-    <!-- Message Detail Modal -->
-    <div id="msgModal" class="msg-modal hidden">
-      <div class="msg-modal-inner">
-        <div class="msg-modal-header">
+    <!-- Message Modal -->
+    <div id="msgModal" class="overlay hidden">
+      <div class="modal-inner">
+        <div class="modal-head">
           <div>
-            <div id="msgSubject" class="msg-subject"></div>
-            <div id="msgFrom" class="msg-from"></div>
-            <div id="msgDate" class="msg-date"></div>
+            <div id="mSubject" class="m-subject"></div>
+            <div id="mFrom" class="m-from"></div>
+            <div id="mDate" class="m-date"></div>
           </div>
           <button id="closeMsgBtn" class="close-btn"><i class="fas fa-times"></i></button>
         </div>
-        <div id="msgBody" class="msg-body"></div>
-        <div class="msg-actions">
-          <button id="deleteMsgBtn" class="danger-btn"><i class="fas fa-trash"></i> Delete</button>
+        <div id="mBody" class="m-body"></div>
+        <div class="modal-foot">
+          <button id="deleteMsgBtn" class="btn-red"><i class="fas fa-trash"></i> Delete</button>
         </div>
       </div>
     </div>
   </main>
 
   <footer>
-    <p>© 2024 <span class="crown">👑</span> KingBadBoi Tech &nbsp;·&nbsp;
-    <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">
-      <i class="fab fa-whatsapp"></i> Follow Channel
-    </a></p>
+    <p>👑 KingBadBoi Tech &nbsp;·&nbsp;
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">
+        <i class="fab fa-whatsapp"></i> WhatsApp Channel
+      </a>
+    </p>
   </footer>
 
   <script src="script.js"></script>
