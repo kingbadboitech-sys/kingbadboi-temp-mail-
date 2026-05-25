@@ -1,7 +1,7 @@
 
 // ===== KingBadBoi Tech TempMail =====
 
-const API = 'https://api.mail.tm';
+const API = '';
 
 let state = {
   email: null,
