@@ -4,133 +4,149 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Dynamic import for node-fetch (ESM)
-let fetch;
-(async () => { fetch = (await import('node-fetch')).default; })();
+const GUERRILLA = 'https://api.guerrillamail.com/ajax.php';
+const MAILTM = 'https://api.mail.tm';
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Guerrilla Mail base URL
-const GM = 'https://api.guerrillamail.com/ajax.php';
-const AGENT = 'KingBadBoi_TempMail/2.0';
+// ─── GUERRILLA MAIL ───────────────────────────────────────────
 
-// ── Visitor tracking (in-memory; use Redis/DB for production) ────────────────
-const visitors = new Set();
-let totalVisitors = 0;
-
-app.post('/api/visit', (req, res) => {
-  const { deviceId } = req.body;
-  if (deviceId && !visitors.has(deviceId)) {
-    visitors.add(deviceId);
-    totalVisitors++;
-  }
-  res.json({ count: totalVisitors });
+// Get new email address (returns sid_token + email)
+app.get('/api/guerrilla/address', async (req, res) => {
+  try {
+    const r = await fetch(`${GUERRILLA}?f=get_email_address&lang=en`);
+    const d = await r.json();
+    res.json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/visitors', (req, res) => res.json({ count: totalVisitors }));
-
-// ── GET EMAIL ADDRESS ─────────────────────────────────────────────────────────
-// Calls Guerrilla Mail get_email_address → returns { email_addr, sid_token, email_timestamp }
-app.get('/api/generate', async (req, res) => {
+// Set custom username
+app.get('/api/guerrilla/set', async (req, res) => {
   try {
-    const url = `${GM}?f=get_email_address&lang=en&ip=127.0.0.1&agent=${AGENT}`;
-    const r = await fetch(url, { headers: { 'User-Agent': AGENT } });
-    if (!r.ok) throw new Error(`GM responded ${r.status}`);
-    const data = await r.json();
-    // Return only what the frontend needs
-    res.json({
-      email: data.email_addr,
-      sid_token: data.sid_token,
-      timestamp: data.email_timestamp,
-      alias: data.alias || ''
+    const { user, sid } = req.query;
+    const r = await fetch(`${GUERRILLA}?f=set_email_user&email_user=${encodeURIComponent(user)}&sid_token=${sid}&lang=en`);
+    const d = await r.json();
+    res.json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Check inbox
+app.get('/api/guerrilla/check', async (req, res) => {
+  try {
+    const { sid, seq } = req.query;
+    const r = await fetch(`${GUERRILLA}?f=check_email&sid_token=${sid}&seq=${seq||0}`);
+    const d = await r.json();
+    res.json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Fetch single email
+app.get('/api/guerrilla/fetch', async (req, res) => {
+  try {
+    const { sid, id } = req.query;
+    const r = await fetch(`${GUERRILLA}?f=fetch_email&email_id=${id}&sid_token=${sid}`);
+    const d = await r.json();
+    res.json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Get email list
+app.get('/api/guerrilla/list', async (req, res) => {
+  try {
+    const { sid, offset } = req.query;
+    const r = await fetch(`${GUERRILLA}?f=get_email_list&sid_token=${sid}&offset=${offset||0}&seq=0`);
+    const d = await r.json();
+    res.json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Forget / delete address
+app.get('/api/guerrilla/forget', async (req, res) => {
+  try {
+    const { sid } = req.query;
+    const r = await fetch(`${GUERRILLA}?f=forget_me&sid_token=${sid}`);
+    const d = await r.json();
+    res.json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── MAIL.TM ──────────────────────────────────────────────────
+
+async function mtFetch(url, opts) {
+  const r = await fetch(url, opts || {});
+  const t = await r.text();
+  let d; try { d = JSON.parse(t); } catch(e) { d = { error: t }; }
+  return { status: r.status, ok: r.ok, data: d };
+}
+
+app.get('/api/mailtm/domains', async (req, res) => {
+  try {
+    const r1 = await mtFetch(`${MAILTM}/domains?page=1`);
+    const r2 = await mtFetch(`${MAILTM}/domains?page=2`);
+    const all = [...(r1.data['hydra:member']||[]), ...(r2.data['hydra:member']||[])];
+    res.json({ domains: all });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/mailtm/accounts', async (req, res) => {
+  try {
+    const r = await mtFetch(`${MAILTM}/accounts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
     });
-  } catch (err) {
-    console.error('generate error:', err.message);
-    res.status(500).json({ error: 'Failed to generate email. Try again.' });
-  }
+    res.status(r.status).json(r.data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── CHECK INBOX (POLL) ────────────────────────────────────────────────────────
-// Calls check_email with seq (last known mail id) and sid_token
-// Returns list of new messages
-app.get('/api/check', async (req, res) => {
-  const { sid_token, seq = 0 } = req.query;
-  if (!sid_token) return res.status(400).json({ error: 'Missing sid_token' });
-
+app.post('/api/mailtm/token', async (req, res) => {
   try {
-    const url = `${GM}?f=check_email&seq=${seq}&sid_token=${encodeURIComponent(sid_token)}&ip=127.0.0.1&agent=${AGENT}`;
-    const r = await fetch(url, { headers: { 'User-Agent': AGENT } });
-    if (!r.ok) throw new Error(`GM responded ${r.status}`);
-    const data = await r.json();
-    res.json({
-      list: data.list || [],
-      count: data.count || 0,
-      email: data.email || ''
+    const r = await mtFetch(`${MAILTM}/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
     });
-  } catch (err) {
-    console.error('check error:', err.message);
-    res.status(500).json({ error: 'Inbox check failed.' });
-  }
+    res.status(r.status).json(r.data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── FETCH SINGLE EMAIL BODY ───────────────────────────────────────────────────
-app.get('/api/email/:id', async (req, res) => {
-  const { sid_token } = req.query;
-  const { id } = req.params;
-  if (!sid_token) return res.status(400).json({ error: 'Missing sid_token' });
-
+app.get('/api/mailtm/messages', async (req, res) => {
   try {
-    const url = `${GM}?f=fetch_email&email_id=${id}&sid_token=${encodeURIComponent(sid_token)}&ip=127.0.0.1&agent=${AGENT}`;
-    const r = await fetch(url, { headers: { 'User-Agent': AGENT } });
-    if (!r.ok) throw new Error(`GM responded ${r.status}`);
-    const data = await r.json();
-    res.json({
-      id: data.mail_id,
-      from: data.mail_from,
-      subject: data.mail_subject,
-      body: data.mail_body,
-      date: data.mail_date,
-      timestamp: data.mail_timestamp
-    });
-  } catch (err) {
-    console.error('fetch email error:', err.message);
-    res.status(500).json({ error: 'Failed to load email.' });
-  }
+    const auth = req.headers['authorization'] || '';
+    const r = await mtFetch(`${MAILTM}/messages?page=1`, { headers: { 'Authorization': auth } });
+    res.status(r.status).json(r.data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── GET EMAIL LIST (full list, not just new) ──────────────────────────────────
-app.get('/api/list', async (req, res) => {
-  const { sid_token, offset = 0 } = req.query;
-  if (!sid_token) return res.status(400).json({ error: 'Missing sid_token' });
-
+app.get('/api/mailtm/messages/:id', async (req, res) => {
   try {
-    const url = `${GM}?f=get_email_list&offset=${offset}&sid_token=${encodeURIComponent(sid_token)}&ip=127.0.0.1&agent=${AGENT}`;
-    const r = await fetch(url, { headers: { 'User-Agent': AGENT } });
-    if (!r.ok) throw new Error(`GM responded ${r.status}`);
-    const data = await r.json();
-    res.json({ list: data.list || [], count: data.count || 0 });
-  } catch (err) {
-    console.error('list error:', err.message);
-    res.status(500).json({ error: 'Failed to get email list.' });
-  }
+    const auth = req.headers['authorization'] || '';
+    const r = await mtFetch(`${MAILTM}/messages/${req.params.id}`, { headers: { 'Authorization': auth } });
+    res.status(r.status).json(r.data);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── DELETE EMAIL ──────────────────────────────────────────────────────────────
-app.delete('/api/email/:id', async (req, res) => {
-  const { sid_token } = req.query;
-  const { id } = req.params;
+app.delete('/api/mailtm/messages/:id', async (req, res) => {
   try {
-    const url = `${GM}?f=del_email&email_ids[]=${id}&sid_token=${encodeURIComponent(sid_token)}&ip=127.0.0.1&agent=${AGENT}`;
-    await fetch(url, { headers: { 'User-Agent': AGENT } });
-    res.json({ deleted: true });
-  } catch {
-    res.json({ deleted: false });
-  }
+    const auth = req.headers['authorization'] || '';
+    const r = await fetch(`${MAILTM}/messages/${req.params.id}`, { method: 'DELETE', headers: { 'Authorization': auth } });
+    res.status(r.status).json({ ok: r.ok });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.listen(PORT, () => {
-  console.log(`🥷 KingBadBoi TempMail running → http://localhost:${PORT}`);
+app.delete('/api/mailtm/accounts/:id', async (req, res) => {
+  try {
+    const auth = req.headers['authorization'] || '';
+    const r = await fetch(`${MAILTM}/accounts/${req.params.id}`, { method: 'DELETE', headers: { 'Authorization': auth } });
+    res.status(r.status).json({ ok: r.ok });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
+// ─── STATIC ───────────────────────────────────────────────────
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, () => console.log('KingBadBoi TempMail on port ' + PORT));
