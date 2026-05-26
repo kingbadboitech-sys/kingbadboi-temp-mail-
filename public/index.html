@@ -1,131 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KingBadBoi TempMail | Shadow Ninja</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
-  <!-- SCANLINE OVERLAY -->
   <div class="scanlines"></div>
-
-  <!-- PARTICLES -->
   <canvas id="particles"></canvas>
 
-  <!-- FOLLOW GATE MODAL -->
+  <!-- ── FOLLOW GATE ── -->
   <div id="followGate" class="gate-overlay">
     <div class="gate-box">
-      <div class="gate-ninja-icon">🥷</div>
+      <div class="gate-ninja">🥷</div>
       <div class="gate-badge">ACCESS REQUIRED</div>
       <h2 class="gate-title">SHADOW NINJA<br><span>PROTOCOL</span></h2>
-      <p class="gate-text">
-        To access <strong>KingBadBoi TempMail</strong>, you must first join our WhatsApp Channel.<br>
-        Follow the channel and return to unlock the full Shadow Ninja experience.
+      <p class="gate-desc">
+        To unlock <strong>KingBadBoi TempMail</strong> you must join our WhatsApp channel first.
+        One tap — then come back and unlock.
       </p>
-      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="gate-btn" id="followBtn">
-        <span>📲</span> JOIN WHATSAPP CHANNEL
+      <a id="followBtn" href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="btn-whatsapp">
+        📲 JOIN WHATSAPP CHANNEL
       </a>
-      <button class="gate-unlock" id="unlockBtn">I've Followed — UNLOCK ACCESS</button>
-      <p class="gate-hint">* You must follow the channel before unlocking</p>
+      <button id="unlockBtn" class="btn-unlock">✅ I've Followed — UNLOCK</button>
+      <p class="gate-hint">* You must tap the channel link above first</p>
     </div>
   </div>
 
-  <!-- MAIN APP -->
+  <!-- ── MAIN APP ── -->
   <div id="app" class="hidden">
 
-    <!-- HEADER -->
     <header>
       <div class="header-left">
-        <div class="logo-wrap">
-          <span class="logo-ninja">🥷</span>
-          <div class="logo-text">
-            <span class="logo-king">KINGBADBOI</span>
-            <span class="logo-sub">TEMPMAIL <em>· Shadow Ninja</em></span>
-          </div>
+        <span class="logo-ninja">🥷</span>
+        <div>
+          <div class="logo-king">KINGBADBOI</div>
+          <div class="logo-sub">TEMPMAIL &middot; <em>Shadow Ninja</em></div>
         </div>
       </div>
       <div class="header-right">
-        <div class="visitor-badge">
-          <span class="visitor-dot"></span>
-          <span id="visitorCount">0</span> VISITORS
+        <div class="visitor-pill">
+          <span class="vpulse"></span>
+          <span id="visitorCount">0</span>&nbsp;VISITORS
         </div>
-        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="follow-link">📲 OUR CHANNEL</a>
+        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-pill">📲 CHANNEL</a>
       </div>
     </header>
 
-    <!-- HERO -->
+    <!-- ── HERO ── -->
     <section class="hero">
-      <div class="hero-tag">POWERED BY TEMPMAIL NINJA</div>
+      <div class="powered-strip">⚡ POWERED BY GUERRILLA MAIL &nbsp;·&nbsp; SHADOW NINJA ENGINE</div>
+
       <h1 class="hero-title">
         <span class="glitch" data-text="SHADOW">SHADOW</span>
-        <span class="hero-title-2">INBOX</span>
+        <span class="hero-red">INBOX</span>
       </h1>
-      <p class="hero-sub">Generate anonymous disposable emails. No registration. No traces. Pure ninja.</p>
+      <p class="hero-sub">Instant anonymous disposable email. No registration. No traces. Auto-refresh inbox.</p>
 
-      <!-- EMAIL BOX -->
+      <!-- EMAIL CARD -->
       <div class="email-card" id="emailCard">
-        <div class="email-label">YOUR SHADOW EMAIL</div>
-        <div class="email-display-wrap">
-          <div class="email-display" id="emailDisplay">
-            <span class="email-placeholder">— click GENERATE to summon your email —</span>
+        <div class="card-top-bar"></div>
+        <div class="card-label">YOUR SHADOW EMAIL ADDRESS</div>
+
+        <div class="email-row">
+          <div class="email-addr" id="emailAddr">
+            <span class="addr-placeholder">— press GENERATE to summon —</span>
           </div>
-          <button class="copy-btn" id="copyBtn" title="Copy email" style="display:none">⧉</button>
+          <button class="copy-btn" id="copyBtn" title="Copy" style="display:none">⧉ COPY</button>
         </div>
-        <div class="email-actions">
-          <button class="btn btn-generate" id="generateBtn">
+
+        <div class="card-actions">
+          <button class="btn-gen" id="generateBtn">
             <span class="btn-icon">⚡</span> GENERATE EMAIL
           </button>
-          <button class="btn btn-inbox" id="inboxBtn" disabled>
+          <button class="btn-inbox" id="inboxBtn" disabled>
             <span class="btn-icon">📬</span> CHECK INBOX
           </button>
         </div>
-        <div class="email-timer" id="emailTimer" style="display:none">
-          <span class="timer-dot"></span> ACTIVE · Expires in <span id="timerCount">10:00</span>
+
+        <!-- Timer & Auto-poll status -->
+        <div class="card-footer" id="cardFooter" style="display:none">
+          <div class="timer-wrap">
+            <span class="timer-dot"></span>
+            ACTIVE &nbsp;·&nbsp; Expires in <span id="timerVal">60:00</span>
+          </div>
+          <div class="poll-status" id="pollStatus">
+            <span class="poll-dot" id="pollDot"></span>
+            <span id="pollLabel">Auto-refresh: OFF</span>
+          </div>
         </div>
       </div>
 
-      <div class="powered-tag">
-        <img src="https://tempmail.ninja/favicon.ico" onerror="this.style.display='none'" width="14" />
-        Shadow Ninja engine via <a href="https://tempmail.ninja" target="_blank">tempmail.ninja</a>
+      <div class="credit-tag">
+        Disposable emails via <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a>
+        &nbsp;·&nbsp; KingBadBoi Shadow Ninja
       </div>
     </section>
 
-    <!-- INBOX SECTION -->
-    <section class="inbox-section" id="inboxSection" style="display:none">
-      <div class="inbox-header">
+    <!-- ── INBOX ── -->
+    <section id="inboxSection" class="inbox-section" style="display:none">
+      <div class="inbox-head">
         <h2>📬 SHADOW INBOX</h2>
-        <div class="inbox-email-tag" id="inboxEmailTag"></div>
-        <button class="refresh-btn" id="refreshBtn">↻ REFRESH</button>
+        <div class="inbox-addr-tag" id="inboxAddrTag"></div>
+        <button class="btn-refresh" id="refreshBtn">↻ REFRESH NOW</button>
       </div>
+
+      <div class="new-mail-banner" id="newMailBanner" style="display:none">
+        🔔 NEW MESSAGE ARRIVED!
+      </div>
+
       <div id="inboxList" class="inbox-list">
         <div class="inbox-empty">
-          <div class="inbox-empty-icon">🥷</div>
-          <p>No messages yet...<br><span>Your inbox is in stealth mode.</span></p>
+          <div class="empty-icon">🥷</div>
+          <p>Inbox in stealth mode...<br><span>Waiting for messages</span></p>
         </div>
       </div>
     </section>
 
-    <!-- EMAIL VIEWER -->
-    <div class="email-viewer-overlay" id="emailViewerOverlay" style="display:none">
-      <div class="email-viewer">
-        <button class="viewer-close" id="viewerClose">✕ CLOSE</button>
+    <!-- ── EMAIL VIEWER MODAL ── -->
+    <div id="viewerOverlay" class="viewer-overlay" style="display:none">
+      <div class="viewer-box">
+        <div class="viewer-topbar">
+          <span>📧 MESSAGE VIEWER</span>
+          <button id="viewerClose" class="viewer-close-btn">✕ CLOSE</button>
+        </div>
         <div class="viewer-meta" id="viewerMeta"></div>
         <div class="viewer-body" id="viewerBody"></div>
+        <div class="viewer-footer" id="viewerFooter"></div>
       </div>
     </div>
 
-    <!-- FOOTER -->
     <footer>
-      <div class="footer-inner">
-        <span>🥷 KingBadBoi TempMail · Shadow Ninja</span>
-        <span>Powered by <a href="https://tempmail.ninja" target="_blank">TempMail Ninja</a></span>
-        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📲 Join Our Channel</a>
-      </div>
+      <span>🥷 KingBadBoi TempMail · Shadow Ninja</span>
+      <span>Email by <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a></span>
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📲 Join Channel</a>
     </footer>
-
   </div>
 
   <script src="script.js"></script>
