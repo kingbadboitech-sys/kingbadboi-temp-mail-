@@ -1,7 +1,7 @@
 {
   "name": "kingbadboi-tempmail",
-  "version": "1.0.0",
-  "description": "KingBadBoi TempMail Web - Powered by Shadow Ninja",
+  "version": "2.0.0",
+  "description": "KingBadBoi TempMail - Guerrilla Mail powered",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
