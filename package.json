@@ -1,7 +1,7 @@
 {
   "name": "kingbadboi-tempmail",
   "version": "1.0.0",
-  "description": "KingBadBoi TempMail - Shadow Ninja powered disposable email",
+  "description": "KingBadBoi TempMail Web - Powered by Shadow Ninja",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
