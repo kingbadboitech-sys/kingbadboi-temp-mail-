@@ -1,145 +1,210 @@
+HTMLEOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KingBadBoi TempMail | Shadow Ninja</title>
+  <title>KingBadBoi Tech — TempMail</title>
   <link rel="stylesheet" href="style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
 
-  <div class="scanlines"></div>
-  <canvas id="particles"></canvas>
-
-  <!-- ── FOLLOW GATE ── -->
-  <div id="followGate" class="gate-overlay">
-    <div class="gate-box">
-      <div class="gate-ninja">🥷</div>
-      <div class="gate-badge">ACCESS REQUIRED</div>
-      <h2 class="gate-title">SHADOW NINJA<br><span>PROTOCOL</span></h2>
-      <p class="gate-desc">
-        To unlock <strong>KingBadBoi TempMail</strong> you must join our WhatsApp channel first.
-        One tap — then come back and unlock.
-      </p>
-      <a id="followBtn" href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="btn-whatsapp">
-        📲 JOIN WHATSAPP CHANNEL
+  <!-- Follow Modal -->
+  <div id="followModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-crown">👑</div>
+      <h2 class="modal-title">KingBadBoi Tech</h2>
+      <p class="modal-sub">Follow our WhatsApp Channel to unlock access — tips &amp; updates daily!</p>
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-btn">
+        <i class="fab fa-whatsapp"></i> Follow Channel Now
       </a>
-      <button id="unlockBtn" class="btn-unlock">✅ I've Followed — UNLOCK</button>
-      <p class="gate-hint">* You must tap the channel link above first</p>
+      <button id="followedBtn" class="followed-btn">✓ I've Followed — Enter Site</button>
+      <p class="modal-note">100% Free · No registration · No spam 💚</p>
     </div>
   </div>
 
-  <!-- ── MAIN APP ── -->
-  <div id="app" class="hidden">
-
-    <header>
-      <div class="header-left">
-        <span class="logo-ninja">🥷</span>
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="crown">👑</span>
         <div>
-          <div class="logo-king">KINGBADBOI</div>
-          <div class="logo-sub">TEMPMAIL &middot; <em>Shadow Ninja</em></div>
+          <span class="logo-king">KingBadBoi</span>
+          <span class="logo-tech">TECH · TEMP MAIL</span>
         </div>
       </div>
-      <div class="header-right">
-        <div class="visitor-pill">
-          <span class="vpulse"></span>
-          <span id="visitorCount">0</span>&nbsp;VISITORS
-        </div>
-        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-pill">📲 CHANNEL</a>
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-link">
+        <i class="fab fa-whatsapp"></i> Channel
+      </a>
+    </div>
+    <div class="scan-line"></div>
+  </header>
+
+  <main>
+    <!-- Page Tabs -->
+    <div class="page-tabs">
+      <button class="tab-btn active" id="tabG" onclick="switchTab('guerrilla')">
+        <i class="fas fa-skull-crossbones"></i> Guerrilla Mail
+      </button>
+      <button class="tab-btn" id="tabM" onclick="switchTab('mailtm')">
+        <i class="fas fa-envelope-open-text"></i> Mail.tm
+      </button>
+    </div>
+
+    <!-- ═══ GUERRILLA MAIL PAGE ═══ -->
+    <div id="pageGuerrilla" class="page active">
+
+      <div class="api-badge guerrilla-badge">
+        <i class="fas fa-skull-crossbones"></i> Powered by GuerrilaMail API
       </div>
-    </header>
 
-    <!-- ── HERO ── -->
-    <section class="hero">
-      <div class="powered-strip">⚡ POWERED BY GUERRILLA MAIL &nbsp;·&nbsp; SHADOW NINJA ENGINE</div>
+      <!-- Guerrilla Domains -->
+      <div class="domains-bar">
+        <span class="domains-label"><i class="fas fa-globe"></i> Available Domains:</span>
+        <div class="domain-list">
+          <span class="dtag">@guerrillamailblock.com</span>
+          <span class="dtag">@guerrillamail.com</span>
+          <span class="dtag">@guerrillamail.biz</span>
+          <span class="dtag">@guerrillamail.de</span>
+          <span class="dtag">@guerrillamail.net</span>
+          <span class="dtag">@guerrillamail.org</span>
+          <span class="dtag">@grr.la</span>
+          <span class="dtag">@spam4.me</span>
+          <span class="dtag">@sharklasers.com</span>
+          <span class="dtag">@guerrillamail.info</span>
+        </div>
+      </div>
 
-      <h1 class="hero-title">
-        <span class="glitch" data-text="SHADOW">SHADOW</span>
-        <span class="hero-red">INBOX</span>
-      </h1>
-      <p class="hero-sub">Instant anonymous disposable email. No registration. No traces. Auto-refresh inbox.</p>
+      <div class="card">
+        <div class="field-label"><i class="fas fa-user"></i> FULL NAME (US)</div>
+        <div class="row-wrap">
+          <div id="g-nameDisplay" class="display-box dim">Click Generate below</div>
+          <button id="g-copyName" class="icon-btn" disabled><i class="far fa-copy"></i></button>
+        </div>
 
-      <!-- EMAIL CARD -->
-      <div class="email-card" id="emailCard">
-        <div class="card-top-bar"></div>
-        <div class="card-label">YOUR SHADOW EMAIL ADDRESS</div>
+        <div class="field-label mt14"><i class="fas fa-envelope"></i> EMAIL ADDRESS</div>
+        <div class="row-wrap">
+          <div id="g-emailDisplay" class="display-box dim">Click Generate below</div>
+          <button id="g-copyEmail" class="icon-btn" disabled><i class="far fa-copy"></i></button>
+        </div>
 
-        <div class="email-row">
-          <div class="email-addr" id="emailAddr">
-            <span class="addr-placeholder">— press GENERATE to summon —</span>
+        <div class="hint-box">
+          <i class="fas fa-lightbulb"></i>
+          Use the <strong>name</strong> &amp; <strong>email</strong> together when signing up — your verification code will appear in the inbox below automatically.
+        </div>
+
+        <div class="btn-row">
+          <button id="g-generate" class="btn-primary"><i class="fas fa-magic"></i> Generate</button>
+          <button id="g-new" class="btn-gold" disabled><i class="fas fa-sync-alt"></i> New Identity</button>
+          <button id="g-delete" class="btn-red" disabled><i class="fas fa-trash"></i> Delete</button>
+        </div>
+        <div id="g-status" class="status-msg"></div>
+      </div>
+
+      <!-- Guerrilla Inbox -->
+      <div id="g-inboxSection" class="hidden">
+        <div class="section-label mt20">
+          <span><i class="fas fa-inbox"></i> INBOX</span>
+          <div class="inbox-right">
+            <span id="g-msgCount" class="badge">0 messages</span>
+            <button id="g-refresh" class="btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
           </div>
-          <button class="copy-btn" id="copyBtn" title="Copy" style="display:none">⧉ COPY</button>
         </div>
-
-        <div class="card-actions">
-          <button class="btn-gen" id="generateBtn">
-            <span class="btn-icon">⚡</span> GENERATE EMAIL
-          </button>
-          <button class="btn-inbox" id="inboxBtn" disabled>
-            <span class="btn-icon">📬</span> CHECK INBOX
-          </button>
+        <div class="auto-note"><i class="fas fa-bolt"></i> Auto-checks every 7 seconds · Verification codes highlighted in gold</div>
+        <div id="g-msgList" class="msg-list">
+          <div class="empty-box"><i class="fas fa-envelope-open"></i><p>Inbox empty — sign up anywhere using the email above</p></div>
         </div>
-
-        <!-- Timer & Auto-poll status -->
-        <div class="card-footer" id="cardFooter" style="display:none">
-          <div class="timer-wrap">
-            <span class="timer-dot"></span>
-            ACTIVE &nbsp;·&nbsp; Expires in <span id="timerVal">60:00</span>
-          </div>
-          <div class="poll-status" id="pollStatus">
-            <span class="poll-dot" id="pollDot"></span>
-            <span id="pollLabel">Auto-refresh: OFF</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="credit-tag">
-        Disposable emails via <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a>
-        &nbsp;·&nbsp; KingBadBoi Shadow Ninja
-      </div>
-    </section>
-
-    <!-- ── INBOX ── -->
-    <section id="inboxSection" class="inbox-section" style="display:none">
-      <div class="inbox-head">
-        <h2>📬 SHADOW INBOX</h2>
-        <div class="inbox-addr-tag" id="inboxAddrTag"></div>
-        <button class="btn-refresh" id="refreshBtn">↻ REFRESH NOW</button>
-      </div>
-
-      <div class="new-mail-banner" id="newMailBanner" style="display:none">
-        🔔 NEW MESSAGE ARRIVED!
-      </div>
-
-      <div id="inboxList" class="inbox-list">
-        <div class="inbox-empty">
-          <div class="empty-icon">🥷</div>
-          <p>Inbox in stealth mode...<br><span>Waiting for messages</span></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── EMAIL VIEWER MODAL ── -->
-    <div id="viewerOverlay" class="viewer-overlay" style="display:none">
-      <div class="viewer-box">
-        <div class="viewer-topbar">
-          <span>📧 MESSAGE VIEWER</span>
-          <button id="viewerClose" class="viewer-close-btn">✕ CLOSE</button>
-        </div>
-        <div class="viewer-meta" id="viewerMeta"></div>
-        <div class="viewer-body" id="viewerBody"></div>
-        <div class="viewer-footer" id="viewerFooter"></div>
       </div>
     </div>
 
-    <footer>
-      <span>🥷 KingBadBoi TempMail · Shadow Ninja</span>
-      <span>Email by <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a></span>
-      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📲 Join Channel</a>
-    </footer>
-  </div>
+    <!-- ═══ MAIL.TM PAGE ═══ -->
+    <div id="pageMailtm" class="page">
 
-  <script src="script.js"></script>
+      <div class="api-badge mailtm-badge">
+        <i class="fas fa-envelope-open-text"></i> Powered by Mail.tm API
+      </div>
+
+      <!-- Mail.tm Domains (loaded dynamically) -->
+      <div class="domains-bar">
+        <span class="domains-label"><i class="fas fa-globe"></i> Live Domains:</span>
+        <div id="m-domainList" class="domain-list">
+          <span class="dtag-dim">Loading...</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field-label"><i class="fas fa-user"></i> FULL NAME (US)</div>
+        <div class="row-wrap">
+          <div id="m-nameDisplay" class="display-box dim">Click Generate below</div>
+          <button id="m-copyName" class="icon-btn" disabled><i class="far fa-copy"></i></button>
+        </div>
+
+        <div class="field-label mt14"><i class="fas fa-envelope"></i> EMAIL ADDRESS</div>
+        <div class="row-wrap">
+          <div id="m-emailDisplay" class="display-box dim">Click Generate below</div>
+          <button id="m-copyEmail" class="icon-btn" disabled><i class="far fa-copy"></i></button>
+        </div>
+
+        <div class="hint-box">
+          <i class="fas fa-lightbulb"></i>
+          A random domain is picked from all available Mail.tm domains each time you generate.
+        </div>
+
+        <div class="btn-row">
+          <button id="m-generate" class="btn-primary"><i class="fas fa-magic"></i> Generate</button>
+          <button id="m-new" class="btn-gold" disabled><i class="fas fa-sync-alt"></i> New Identity</button>
+          <button id="m-delete" class="btn-red" disabled><i class="fas fa-trash"></i> Delete</button>
+        </div>
+        <div id="m-status" class="status-msg"></div>
+      </div>
+
+      <!-- Mail.tm Inbox -->
+      <div id="m-inboxSection" class="hidden">
+        <div class="section-label mt20">
+          <span><i class="fas fa-inbox"></i> INBOX</span>
+          <div class="inbox-right">
+            <span id="m-msgCount" class="badge">0 messages</span>
+            <button id="m-refresh" class="btn-small"><i class="fas fa-sync-alt"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="auto-note"><i class="fas fa-bolt"></i> Auto-checks every 7 seconds · Verification codes highlighted in gold</div>
+        <div id="m-msgList" class="msg-list">
+          <div class="empty-box"><i class="fas fa-envelope-open"></i><p>Inbox empty — sign up anywhere using the email above</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared Message Modal -->
+    <div id="msgModal" class="overlay hidden">
+      <div class="modal-inner">
+        <div class="modal-head">
+          <div class="modal-head-info">
+            <div id="mSubject" class="m-subject"></div>
+            <div id="mFrom" class="m-from"></div>
+            <div id="mDate" class="m-date"></div>
+          </div>
+          <button id="closeMsgBtn" class="close-btn"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="mBody" class="m-body"></div>
+        <div class="modal-foot">
+          <button id="deleteMsgBtn" class="btn-red"><i class="fas fa-trash"></i> Delete</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>👑 <strong>KingBadBoi Tech</strong> &nbsp;·&nbsp;
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">
+        <i class="fab fa-whatsapp"></i> Follow on WhatsApp
+      </a>
+    </p>
+  </footer>
+
+  <script src="guerrilla.js"></script>
+  <script src="mailtm.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
