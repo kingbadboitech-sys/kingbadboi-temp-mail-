@@ -3,149 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KingBadBoi TempMail – Shadow Ninja Edition</title>
+  <title>KingBadBoi TempMail | Shadow Ninja</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-  <!-- Particle Canvas -->
+  <!-- SCANLINE OVERLAY -->
+  <div class="scanlines"></div>
+
+  <!-- PARTICLES -->
   <canvas id="particles"></canvas>
 
-  <!-- Follow Gate Overlay -->
-  <div id="follow-gate" class="gate-overlay">
+  <!-- FOLLOW GATE MODAL -->
+  <div id="followGate" class="gate-overlay">
     <div class="gate-box">
-      <div class="gate-ninja">🥷</div>
-      <h2 class="gate-title">SHADOW NINJA ZONE</h2>
-      <p class="gate-sub">You must join the KingBadBoi channel before you can enter.</p>
-      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="follow-btn" id="follow-link">
-        <span>📢</span> Follow Channel on WhatsApp
+      <div class="gate-ninja-icon">🥷</div>
+      <div class="gate-badge">ACCESS REQUIRED</div>
+      <h2 class="gate-title">SHADOW NINJA<br><span>PROTOCOL</span></h2>
+      <p class="gate-text">
+        To access <strong>KingBadBoi TempMail</strong>, you must first join our WhatsApp Channel.<br>
+        Follow the channel and return to unlock the full Shadow Ninja experience.
+      </p>
+      <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="gate-btn" id="followBtn">
+        <span>📲</span> JOIN WHATSAPP CHANNEL
       </a>
-      <button class="enter-btn" id="enter-btn">I've Followed — Enter Site</button>
+      <button class="gate-unlock" id="unlockBtn">I've Followed — UNLOCK ACCESS</button>
+      <p class="gate-hint">* You must follow the channel before unlocking</p>
     </div>
   </div>
 
-  <!-- Main Site -->
-  <div id="main-site" class="hidden">
+  <!-- MAIN APP -->
+  <div id="app" class="hidden">
 
-    <!-- Header -->
+    <!-- HEADER -->
     <header>
-      <div class="header-inner">
-        <div class="logo-area">
-          <span class="logo-icon">🥷</span>
-          <div>
-            <div class="logo-title">KINGBADBOI</div>
-            <div class="logo-sub">SHADOW NINJA TEMPMAIL</div>
+      <div class="header-left">
+        <div class="logo-wrap">
+          <span class="logo-ninja">🥷</span>
+          <div class="logo-text">
+            <span class="logo-king">KINGBADBOI</span>
+            <span class="logo-sub">TEMPMAIL <em>· Shadow Ninja</em></span>
           </div>
         </div>
+      </div>
+      <div class="header-right">
         <div class="visitor-badge">
-          <span class="visitor-icon">👁</span>
-          <span id="visitor-count">0</span> visitors
+          <span class="visitor-dot"></span>
+          <span id="visitorCount">0</span> VISITORS
         </div>
+        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="follow-link">📲 OUR CHANNEL</a>
       </div>
     </header>
 
-    <!-- Powered By Banner -->
-    <div class="powered-bar">
-      ⚡ Powered by <a href="https://tempmail.ninja" target="_blank">TempMail Ninja</a> &nbsp;|&nbsp; Shadow Ninja Edition &nbsp;|&nbsp; 100% Anonymous
-    </div>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-tag">POWERED BY TEMPMAIL NINJA</div>
+      <h1 class="hero-title">
+        <span class="glitch" data-text="SHADOW">SHADOW</span>
+        <span class="hero-title-2">INBOX</span>
+      </h1>
+      <p class="hero-sub">Generate anonymous disposable emails. No registration. No traces. Pure ninja.</p>
 
-    <!-- Hero -->
-    <main>
-      <section class="hero">
-        <div class="hero-tag">SHADOW NINJA TEMPMAIL</div>
-        <h1 class="hero-title">DISPOSABLE EMAIL<br /><span class="accent">LIKE A NINJA</span></h1>
-        <p class="hero-desc">Instant. Anonymous. No registration. Powered by TempMail Ninja's Shadow-tier domains — trusted, clean, and undetectable.</p>
-      </section>
-
-      <!-- Email Card -->
-      <div class="email-card">
-        <div class="card-header">
-          <span class="card-label">YOUR SHADOW NINJA EMAIL</span>
-          <span class="card-ninja-rank">⚡ SHADOW TIER</span>
-        </div>
+      <!-- EMAIL BOX -->
+      <div class="email-card" id="emailCard">
+        <div class="email-label">YOUR SHADOW EMAIL</div>
         <div class="email-display-wrap">
-          <div class="email-display" id="email-display">
-            <span class="email-placeholder">Click GENERATE to get your email</span>
+          <div class="email-display" id="emailDisplay">
+            <span class="email-placeholder">— click GENERATE to summon your email —</span>
           </div>
-          <button class="copy-btn" id="copy-btn" title="Copy email" style="display:none">📋</button>
+          <button class="copy-btn" id="copyBtn" title="Copy email" style="display:none">⧉</button>
         </div>
-        <div class="card-actions">
-          <button class="btn-generate" id="generate-btn">
+        <div class="email-actions">
+          <button class="btn btn-generate" id="generateBtn">
             <span class="btn-icon">⚡</span> GENERATE EMAIL
           </button>
-          <button class="btn-inbox" id="inbox-btn" disabled>
+          <button class="btn btn-inbox" id="inboxBtn" disabled>
             <span class="btn-icon">📬</span> CHECK INBOX
           </button>
         </div>
-        <div class="email-meta" id="email-meta"></div>
-      </div>
-
-      <!-- Inbox Panel -->
-      <div class="inbox-panel hidden" id="inbox-panel">
-        <div class="inbox-header">
-          <span class="inbox-title">📬 INBOX</span>
-          <span class="inbox-email-tag" id="inbox-tag"></span>
-          <button class="refresh-btn" id="refresh-btn">🔄 Refresh</button>
-        </div>
-        <div id="inbox-list">
-          <div class="inbox-empty">
-            <div class="empty-icon">🕵️</div>
-            <div>No messages yet. Waiting in the shadows...</div>
-          </div>
+        <div class="email-timer" id="emailTimer" style="display:none">
+          <span class="timer-dot"></span> ACTIVE · Expires in <span id="timerCount">10:00</span>
         </div>
       </div>
 
-      <!-- Message Modal -->
-      <div class="modal-overlay hidden" id="msg-modal">
-        <div class="modal-box">
-          <button class="modal-close" id="modal-close">✕</button>
-          <div class="modal-from" id="modal-from"></div>
-          <div class="modal-subject" id="modal-subject"></div>
-          <div class="modal-date" id="modal-date"></div>
-          <hr class="modal-hr" />
-          <div class="modal-body" id="modal-body"></div>
+      <div class="powered-tag">
+        <img src="https://tempmail.ninja/favicon.ico" onerror="this.style.display='none'" width="14" />
+        Shadow Ninja engine via <a href="https://tempmail.ninja" target="_blank">tempmail.ninja</a>
+      </div>
+    </section>
+
+    <!-- INBOX SECTION -->
+    <section class="inbox-section" id="inboxSection" style="display:none">
+      <div class="inbox-header">
+        <h2>📬 SHADOW INBOX</h2>
+        <div class="inbox-email-tag" id="inboxEmailTag"></div>
+        <button class="refresh-btn" id="refreshBtn">↻ REFRESH</button>
+      </div>
+      <div id="inboxList" class="inbox-list">
+        <div class="inbox-empty">
+          <div class="inbox-empty-icon">🥷</div>
+          <p>No messages yet...<br><span>Your inbox is in stealth mode.</span></p>
         </div>
       </div>
+    </section>
 
-      <!-- Features -->
-      <section class="features">
-        <div class="feature-card">
-          <div class="feature-icon">🥷</div>
-          <div class="feature-title">Shadow Tier Domain</div>
-          <div class="feature-desc">High-reputation .org & .com domains — bypasses spam filters effortlessly</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <div class="feature-title">Instant Generation</div>
-          <div class="feature-desc">One click. No signup. No data required. Pure ninja speed.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <div class="feature-title">Zero Trace</div>
-          <div class="feature-desc">Auto-cleanup after use. Your digital footprint vanishes like smoke.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📡</div>
-          <div class="feature-title">Real-time Inbox</div>
-          <div class="feature-desc">Check emails live. OTPs, verifications, links — all delivered instantly.</div>
-        </div>
-      </section>
-
-      <!-- Channel CTA -->
-      <div class="cta-strip">
-        <span>🔔 Stay updated — Join the KingBadBoi WhatsApp Channel</span>
-        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="cta-link">Follow Now →</a>
+    <!-- EMAIL VIEWER -->
+    <div class="email-viewer-overlay" id="emailViewerOverlay" style="display:none">
+      <div class="email-viewer">
+        <button class="viewer-close" id="viewerClose">✕ CLOSE</button>
+        <div class="viewer-meta" id="viewerMeta"></div>
+        <div class="viewer-body" id="viewerBody"></div>
       </div>
-    </main>
+    </div>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <footer>
-      <div class="footer-logo">🥷 KINGBADBOI SHADOW NINJA TEMPMAIL</div>
-      <div class="footer-sub">Powered by <a href="https://tempmail.ninja" target="_blank">tempmail.ninja</a></div>
-      <div class="footer-links">
-        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📢 WhatsApp Channel</a>
+      <div class="footer-inner">
+        <span>🥷 KingBadBoi TempMail · Shadow Ninja</span>
+        <span>Powered by <a href="https://tempmail.ninja" target="_blank">TempMail Ninja</a></span>
+        <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📲 Join Our Channel</a>
       </div>
     </footer>
 

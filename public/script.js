@@ -1,281 +1,314 @@
-/* ===== KingBadBoi Shadow Ninja TempMail ===== */
+/* ─── KingBadBoi TempMail · Shadow Ninja ─────────────────────── */
 
-// ── Particles ──────────────────────────────────────────────
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-let particles = [];
+const API = ''; // empty = same origin (server.js serves frontend too)
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+// ─── STATE ────────────────────────────────────────────────────────
+let currentEmail = null;
+let currentToken = null;
+let timerInterval = null;
+let timerSeconds = 600; // 10 minutes
 
-class Particle {
-  constructor() { this.reset(); }
-  reset() {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.size = Math.random() * 1.5 + 0.3;
-    this.speedX = (Math.random() - 0.5) * 0.4;
-    this.speedY = -Math.random() * 0.5 - 0.1;
-    this.opacity = Math.random() * 0.5 + 0.1;
-    this.color = Math.random() > 0.5 ? '#00e5ff' : '#a855f7';
-  }
-  update() {
-    this.x += this.speedX;
-    this.y += this.speedY;
-    if (this.y < 0 || this.x < 0 || this.x > canvas.width) this.reset();
-  }
-  draw() {
-    ctx.save();
-    ctx.globalAlpha = this.opacity;
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-for (let i = 0; i < 120; i++) particles.push(new Particle());
-
-function animateParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => { p.update(); p.draw(); });
-  requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-// ── Toast ───────────────────────────────────────────────────
-function showToast(msg, duration = 2500) {
-  let t = document.querySelector('.toast');
-  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), duration);
-}
-
-// ── Device ID & Visitor Count ───────────────────────────────
+// ─── DEVICE ID ────────────────────────────────────────────────────
 function getDeviceId() {
-  let id = localStorage.getItem('kb_device_id');
+  let id = localStorage.getItem('kbb_device_id');
   if (!id) {
     id = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    localStorage.setItem('kb_device_id', id);
+    localStorage.setItem('kbb_device_id', id);
   }
   return id;
 }
 
-async function registerVisit() {
+// ─── VISITOR COUNT ────────────────────────────────────────────────
+async function registerVisitor() {
   try {
-    const res = await fetch('/api/visit', {
+    const res = await fetch(API + '/api/visit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deviceId: getDeviceId() })
     });
     const data = await res.json();
-    updateVisitorDisplay(data.unique);
+    document.getElementById('visitorCount').textContent = data.count.toLocaleString();
   } catch {
-    // Fallback: count from localStorage
-    const count = parseInt(localStorage.getItem('kb_visitor_total') || '0') + 1;
-    localStorage.setItem('kb_visitor_total', count);
-    updateVisitorDisplay(count);
+    // silent fail
   }
 }
 
-function updateVisitorDisplay(count) {
-  const el = document.getElementById('visitor-count');
-  if (el) el.textContent = count.toLocaleString();
-}
+// ─── PARTICLES ────────────────────────────────────────────────────
+function initParticles() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
 
-// ── Follow Gate ─────────────────────────────────────────────
-const gateEl = document.getElementById('follow-gate');
-const mainEl = document.getElementById('main-site');
-const enterBtn = document.getElementById('enter-btn');
-const followLink = document.getElementById('follow-link');
+  const particles = Array.from({ length: 60 }, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r: Math.random() * 1.5 + 0.3,
+    alpha: Math.random() * 0.4 + 0.1,
+    color: Math.random() > 0.6 ? '#ff2244' : Math.random() > 0.5 ? '#00ffe7' : '#ffd700'
+  }));
 
-let followClicked = localStorage.getItem('kb_followed') === '1';
-
-followLink.addEventListener('click', () => {
-  followClicked = true;
-  localStorage.setItem('kb_followed', '1');
-  setTimeout(() => {
-    enterBtn.textContent = "✅ Followed! Enter Site";
-    enterBtn.style.borderColor = '#25D366';
-    enterBtn.style.color = '#25D366';
-  }, 500);
-});
-
-enterBtn.addEventListener('click', () => {
-  if (!followClicked && localStorage.getItem('kb_followed') !== '1') {
-    showToast('👆 Please follow the channel first!', 3000);
-    followLink.style.animation = 'none';
-    followLink.offsetHeight;
-    followLink.style.animation = 'gateIn 0.3s ease';
-    return;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
   }
-  gateEl.style.animation = 'gateOut 0.3s ease forwards';
-  setTimeout(() => {
-    gateEl.style.display = 'none';
-    mainEl.classList.remove('hidden');
-    registerVisit();
-  }, 280);
-});
-
-// Inject gateOut keyframe
-const style = document.createElement('style');
-style.textContent = `@keyframes gateOut { to { opacity: 0; transform: scale(1.05); } }`;
-document.head.appendChild(style);
-
-// Auto-open if already followed
-if (localStorage.getItem('kb_followed') === '1') {
-  gateEl.style.display = 'none';
-  mainEl.classList.remove('hidden');
-  registerVisit();
+  draw();
+  window.addEventListener('resize', () => {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  });
 }
 
-// ── State ────────────────────────────────────────────────────
-let currentEmail = null;
-let currentToken = null;
-let currentSeq = 0;
+// ─── TOAST ────────────────────────────────────────────────────────
+function showToast(msg, duration = 2500) {
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
 
-// ── DOM Refs ─────────────────────────────────────────────────
-const generateBtn = document.getElementById('generate-btn');
-const inboxBtn = document.getElementById('inbox-btn');
-const emailDisplay = document.getElementById('email-display');
-const copyBtn = document.getElementById('copy-btn');
-const emailMeta = document.getElementById('email-meta');
-const inboxPanel = document.getElementById('inbox-panel');
-const inboxList = document.getElementById('inbox-list');
-const inboxTag = document.getElementById('inbox-tag');
-const refreshBtn = document.getElementById('refresh-btn');
-const msgModal = document.getElementById('msg-modal');
-const modalClose = document.getElementById('modal-close');
+// ─── TIMER ────────────────────────────────────────────────────────
+function startTimer() {
+  clearInterval(timerInterval);
+  timerSeconds = 600;
+  document.getElementById('emailTimer').style.display = 'flex';
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      showToast('⏰ Email expired! Generate a new one.');
+      document.getElementById('emailTimer').style.display = 'none';
+    }
+  }, 1000);
+}
 
-// ── Generate Email ────────────────────────────────────────────
-generateBtn.addEventListener('click', async () => {
-  generateBtn.disabled = true;
-  generateBtn.innerHTML = `<span class="spinner"></span> GENERATING...`;
-  emailDisplay.innerHTML = `<span class="email-placeholder">Summoning from the shadows...</span>`;
+function updateTimerDisplay() {
+  const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+  const s = String(timerSeconds % 60).padStart(2, '0');
+  document.getElementById('timerCount').textContent = `${m}:${s}`;
+}
+
+// ─── GENERATE EMAIL ────────────────────────────────────────────────
+async function generateEmail() {
+  const btn = document.getElementById('generateBtn');
+  const display = document.getElementById('emailDisplay');
+
+  btn.innerHTML = '<span class="spinner"></span> SUMMONING...';
+  btn.disabled = true;
+  display.innerHTML = '<span class="email-placeholder">Summoning shadow email...</span>';
 
   try {
-    const res = await fetch('/api/generate');
-    if (!res.ok) throw new Error('Server error');
+    const res = await fetch(API + '/api/generate', { method: 'POST' });
     const data = await res.json();
 
     currentEmail = data.email;
-    currentToken = data.token;
-    currentSeq = 0;
+    currentToken = data.token || btoa(data.email);
 
-    emailDisplay.textContent = currentEmail;
-    copyBtn.style.display = 'flex';
-    emailMeta.textContent = `⏱ Generated at ${new Date().toLocaleTimeString()} · Valid for 24 hours`;
+    display.textContent = currentEmail;
+    document.getElementById('copyBtn').style.display = 'inline-block';
+    document.getElementById('inboxBtn').disabled = false;
+    document.getElementById('inboxEmailTag').textContent = currentEmail;
 
-    inboxBtn.disabled = false;
-    inboxPanel.classList.add('hidden');
-    inboxList.innerHTML = `<div class="inbox-empty"><div class="empty-icon">🕵️</div><div>No messages yet. Waiting in the shadows...</div></div>`;
-    inboxTag.textContent = currentEmail;
-
-    showToast('✅ Shadow Ninja email ready!');
+    startTimer();
+    showToast('✅ Shadow email summoned!');
   } catch (err) {
-    emailDisplay.innerHTML = `<span class="email-placeholder" style="color:#ff3a6e">⚠ Failed. Check connection & try again.</span>`;
-    showToast('❌ Generation failed', 3000);
+    display.innerHTML = '<span class="email-placeholder">⚠ Failed to generate. Retry.</span>';
+    showToast('❌ Generation failed. Check connection.');
   }
 
-  generateBtn.disabled = false;
-  generateBtn.innerHTML = `<span class="btn-icon">⚡</span> GENERATE EMAIL`;
-});
+  btn.innerHTML = '<span class="btn-icon">⚡</span> GENERATE EMAIL';
+  btn.disabled = false;
+}
 
-// ── Copy Email ────────────────────────────────────────────────
-copyBtn.addEventListener('click', () => {
+// ─── COPY EMAIL ────────────────────────────────────────────────────
+function copyEmail() {
   if (!currentEmail) return;
-  navigator.clipboard.writeText(currentEmail).then(() => {
-    showToast('📋 Email copied!');
-    copyBtn.textContent = '✅';
-    setTimeout(() => { copyBtn.textContent = '📋'; }, 2000);
-  });
-});
+  navigator.clipboard.writeText(currentEmail).then(() => showToast('📋 Email copied!'));
+}
 
-// ── Check Inbox ───────────────────────────────────────────────
-inboxBtn.addEventListener('click', () => checkInbox());
-refreshBtn.addEventListener('click', () => checkInbox());
-
+// ─── CHECK INBOX ────────────────────────────────────────────────────
 async function checkInbox() {
   if (!currentToken) return;
-  refreshBtn.textContent = '⏳ Loading...';
-  inboxPanel.classList.remove('hidden');
-  inboxPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const btn = document.getElementById('inboxBtn');
+  const section = document.getElementById('inboxSection');
+  const list = document.getElementById('inboxList');
+
+  btn.innerHTML = '<span class="spinner"></span> SCANNING...';
+  btn.disabled = true;
+  section.style.display = 'block';
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  list.innerHTML = `
+    <div class="inbox-empty">
+      <div class="inbox-empty-icon">🔍</div>
+      <p>Scanning shadow inbox...<br><span>Connecting to TempMail Ninja</span></p>
+    </div>`;
 
   try {
-    const res = await fetch(`/api/inbox?token=${encodeURIComponent(currentToken)}&seq=${currentSeq}`);
+    const res = await fetch(API + '/api/inbox/' + encodeURIComponent(currentToken));
     const data = await res.json();
 
-    const emails = data.list || [];
+    const emails = data.mail || data.emails || data.messages || data || [];
+    renderInbox(Array.isArray(emails) ? emails : []);
+  } catch {
+    list.innerHTML = `
+      <div class="inbox-empty">
+        <div class="inbox-empty-icon">⚠</div>
+        <p>Could not reach inbox.<br><span>Try refreshing in a few seconds.</span></p>
+      </div>`;
+  }
 
-    if (emails.length === 0) {
-      inboxList.innerHTML = `<div class="inbox-empty"><div class="empty-icon">🕵️</div><div>No messages yet. Waiting in the shadows...</div></div>`;
-    } else {
-      // Update seq to latest
-      if (data.count > 0) currentSeq = emails[0].mail_id;
+  btn.innerHTML = '<span class="btn-icon">📬</span> CHECK INBOX';
+  btn.disabled = false;
+}
 
-      inboxList.innerHTML = emails.map(mail => `
-        <div class="inbox-item" onclick="openMessage('${mail.mail_id}')">
-          <div class="inbox-from">📩 ${escHtml(mail.mail_from)}</div>
-          <div class="inbox-subject">${escHtml(mail.mail_subject || '(No Subject)')}</div>
-          <div class="inbox-time">${formatTime(mail.mail_timestamp)}</div>
+// ─── RENDER INBOX ────────────────────────────────────────────────
+function renderInbox(mails) {
+  const list = document.getElementById('inboxList');
+
+  if (!mails.length) {
+    list.innerHTML = `
+      <div class="inbox-empty">
+        <div class="inbox-empty-icon">🥷</div>
+        <p>No messages yet...<br><span>Your inbox is in stealth mode.</span></p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = mails.map((m, i) => {
+    const from = m.from || m.sender || 'Unknown Sender';
+    const subject = m.subject || '(No Subject)';
+    const date = m.date ? new Date(m.date * 1000).toLocaleString() : 'Just now';
+    const id = m.id || m._id || i;
+
+    return `
+      <div class="inbox-item" onclick="openEmail('${id}')">
+        <div class="inbox-item-icon">📧</div>
+        <div class="inbox-item-info">
+          <div class="inbox-item-from">${escHtml(from)}</div>
+          <div class="inbox-item-subject">${escHtml(subject)}</div>
         </div>
-      `).join('');
-    }
-  } catch {
-    inboxList.innerHTML = `<div class="inbox-empty" style="color:#ff3a6e">⚠ Failed to load inbox. Try again.</div>`;
-  }
-
-  refreshBtn.textContent = '🔄 Refresh';
+        <div class="inbox-item-date">${escHtml(date)}</div>
+      </div>`;
+  }).join('');
 }
 
-// ── Open Message ──────────────────────────────────────────────
-async function openMessage(mailId) {
-  if (!currentToken) return;
-  document.getElementById('modal-from').textContent = 'Loading...';
-  document.getElementById('modal-subject').textContent = '';
-  document.getElementById('modal-date').textContent = '';
-  document.getElementById('modal-body').innerHTML = '<div class="spinner"></div>';
-  msgModal.classList.remove('hidden');
+// ─── OPEN EMAIL ──────────────────────────────────────────────────
+async function openEmail(id) {
+  const overlay = document.getElementById('emailViewerOverlay');
+  const meta    = document.getElementById('viewerMeta');
+  const body    = document.getElementById('viewerBody');
+
+  overlay.style.display = 'flex';
+  meta.innerHTML = '<span style="color:var(--text-dim);font-family:var(--font-mono)">Loading message...</span>';
+  body.innerHTML = '';
 
   try {
-    const res = await fetch(`/api/message?token=${encodeURIComponent(currentToken)}&id=${mailId}`);
-    const data = await res.json();
+    const res = await fetch(`${API}/api/email/${encodeURIComponent(currentToken)}/${id}`);
+    const m = await res.json();
 
-    document.getElementById('modal-from').textContent = `FROM: ${data.mail_from || '—'}`;
-    document.getElementById('modal-subject').textContent = data.mail_subject || '(No Subject)';
-    document.getElementById('modal-date').textContent = formatTime(data.mail_timestamp);
+    const from    = m.from || m.sender || 'Unknown';
+    const subject = m.subject || '(No Subject)';
+    const date    = m.date ? new Date(m.date * 1000).toLocaleString() : '';
+    const content = m.body || m.html || m.text || m.content || '(Empty message)';
 
-    const body = data.mail_body || data.mail_text_only || '(Empty message)';
-    // If it looks like HTML, render it in an iframe-safe way
-    if (/<[a-z][\s\S]*>/i.test(body)) {
-      document.getElementById('modal-body').innerHTML = `<div style="pointer-events:none">${body}</div>`;
+    meta.innerHTML = `
+      <div class="meta-from">FROM: ${escHtml(from)}</div>
+      <div class="meta-sub">${escHtml(subject)}</div>
+      <div class="meta-date">${escHtml(date)}</div>`;
+
+    // Render HTML if it looks like HTML, else plain text
+    if (/<[a-z][\s\S]*>/i.test(content)) {
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;border:none;min-height:300px;background:#fff;';
+      body.appendChild(iframe);
+      iframe.contentDocument.open();
+      iframe.contentDocument.write(content);
+      iframe.contentDocument.close();
+      iframe.onload = () => {
+        iframe.style.height = iframe.contentDocument.body.scrollHeight + 'px';
+      };
     } else {
-      document.getElementById('modal-body').textContent = body;
+      body.innerHTML = `<pre style="white-space:pre-wrap;font-family:var(--font-mono);font-size:14px;">${escHtml(content)}</pre>`;
     }
   } catch {
-    document.getElementById('modal-body').textContent = '⚠ Could not load message.';
+    meta.innerHTML = '';
+    body.innerHTML = '<p style="color:var(--text-dim)">Failed to load email.</p>';
   }
 }
 
-window.openMessage = openMessage;
+// ─── FOLLOW GATE ──────────────────────────────────────────────────
+function initGate() {
+  const followed = localStorage.getItem('kbb_followed');
+  const gate = document.getElementById('followGate');
+  const app  = document.getElementById('app');
 
-modalClose.addEventListener('click', () => msgModal.classList.add('hidden'));
-msgModal.addEventListener('click', (e) => { if (e.target === msgModal) msgModal.classList.add('hidden'); });
+  if (followed === 'yes') {
+    gate.style.display = 'none';
+    app.classList.remove('hidden');
+    registerVisitor();
+    return;
+  }
 
-// ── Helpers ───────────────────────────────────────────────────
+  document.getElementById('followBtn').addEventListener('click', () => {
+    // Mark that they clicked follow (opens WhatsApp)
+    localStorage.setItem('kbb_clicked_follow', 'yes');
+  });
+
+  document.getElementById('unlockBtn').addEventListener('click', () => {
+    const clicked = localStorage.getItem('kbb_clicked_follow');
+    if (!clicked) {
+      showToast('⚠ Please click "JOIN WHATSAPP CHANNEL" first!');
+      return;
+    }
+    localStorage.setItem('kbb_followed', 'yes');
+    gate.style.display = 'none';
+    app.classList.remove('hidden');
+    registerVisitor();
+  });
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────
 function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-function formatTime(ts) {
-  if (!ts) return '';
-  const d = new Date(ts * 1000);
-  return d.toLocaleString();
-}
+// ─── BOOT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initParticles();
+  initGate();
+
+  document.getElementById('generateBtn').addEventListener('click', generateEmail);
+  document.getElementById('inboxBtn').addEventListener('click', checkInbox);
+  document.getElementById('refreshBtn').addEventListener('click', checkInbox);
+  document.getElementById('copyBtn').addEventListener('click', copyEmail);
+  document.getElementById('viewerClose').addEventListener('click', () => {
+    document.getElementById('emailViewerOverlay').style.display = 'none';
+  });
+  document.getElementById('emailViewerOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+  });
+});
