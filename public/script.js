@@ -1,580 +1,680 @@
-/* ═══════════════════════════════════════════════════════════════════
-   KingBadBoi TempMail v3 · script.js
-   Two engines: Guerrilla Mail + Mail.tm
-   Real people names · All domains · Auto-poll
-═══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   KingBadBoi TempMail v3.1 · script.js
+   • Guerrilla Mail — all 8 domains, random per generate
+   • Mail.tm — live domains, correct API flow
+   • US-only first/last names, new name every generate
+   • No layout thrash, minimal repaints
+═══════════════════════════════════════════════════════════════ */
 
-// ── REAL PEOPLE NAME BANKS ────────────────────────────────────────
-const FIRST_NAMES = [
-  'James','Oliver','William','Henry','Charles','George','Edward','Thomas',
-  'Alexander','Benjamin','Samuel','Joseph','Michael','Robert','David',
-  'Emily','Sophia','Charlotte','Amelia','Isabella','Mia','Evelyn','Harper',
-  'Sofia','Camila','Luna','Grace','Chloe','Penelope','Layla','Eleanor',
-  'Liam','Noah','Ethan','Mason','Logan','Lucas','Jackson','Aiden',
-  'Mohammed','Yusuf','Omar','Ibrahim','Hassan','Ali','Fatima','Aisha',
-  'Carlos','Diego','Miguel','Lucia','Valentina','Gabriela','Santiago',
-  'Wei','Min','Jing','Xiao','Li','Mei','Zhang','Liu',
-  'Arjun','Priya','Rahul','Neha','Akash','Divya','Rohit','Ananya',
-  'Ivan','Nikolai','Anastasia','Elena','Dmitri','Olga','Sergei',
-  'Lena','Jonas','Emma','Felix','Anna','Max','Julia','Leon','Hannah',
-  'Pierre','Marie','Jacques','Isabelle','François','Camille',
-  'Yuki','Kenji','Hana','Takeshi','Sakura','Ryo','Akira','Natsuki',
-  'Kwame','Amara','Chioma','Emeka','Ngozi','Kofi','Ade','Zara',
+// ── US NAME BANKS (male + female, common US names only) ──────────
+const MALE_FIRST = [
+  'James','John','Robert','Michael','William','David','Richard','Joseph',
+  'Thomas','Charles','Christopher','Daniel','Matthew','Anthony','Mark',
+  'Donald','Steven','Paul','Andrew','Kenneth','Joshua','Kevin','Brian',
+  'George','Timothy','Ronald','Edward','Jason','Jeffrey','Ryan',
+  'Jacob','Gary','Nicholas','Eric','Jonathan','Stephen','Larry','Justin',
+  'Scott','Brandon','Benjamin','Samuel','Raymond','Gregory','Frank',
+  'Alexander','Patrick','Jack','Dennis','Jerry','Tyler','Aaron','Henry',
+  'Douglas','Jose','Adam','Peter','Nathan','Zachary','Walter','Kyle',
+  'Harold','Carl','Jeremy','Keith','Roger','Gerald','Ethan','Arthur',
+  'Terry','Christian','Sean','Lawrence','Austin','Joe','Noah','Jesse',
+  'Albert','Bryan','Billy','Bruce','Willie','Jordan','Dylan','Alan',
+  'Ralph','Gabriel','Roy','Juan','Wayne','Eugene','Logan','Randy',
+  'Louis','Russell','Vincent','Philip','Bobby','Johnny','Bradley','Travis'
+];
+
+const FEMALE_FIRST = [
+  'Mary','Patricia','Jennifer','Linda','Barbara','Elizabeth','Susan','Jessica',
+  'Sarah','Karen','Lisa','Nancy','Betty','Margaret','Sandra','Ashley',
+  'Dorothy','Kimberly','Emily','Donna','Michelle','Carol','Amanda','Melissa',
+  'Deborah','Stephanie','Rebecca','Sharon','Laura','Cynthia','Kathleen','Amy',
+  'Angela','Shirley','Anna','Brenda','Pamela','Emma','Nicole','Helen',
+  'Samantha','Katherine','Christine','Debra','Rachel','Carolyn','Janet','Catherine',
+  'Maria','Heather','Diane','Julie','Joyce','Victoria','Kelly','Christina',
+  'Lauren','Joan','Evelyn','Olivia','Judith','Megan','Cheryl','Martha',
+  'Andrea','Frances','Hannah','Jacqueline','Ann','Gloria','Jean','Kathryn',
+  'Alice','Teresa','Sara','Janice','Doris','Madison','Julia','Grace',
+  'Judy','Abigail','Marie','Denise','Beverly','Amber','Danielle','Marilyn',
+  'Rose','Brittany','Diana','Natalie','Sophia','Charlotte','Alexis','Tiffany'
 ];
 
 const LAST_NAMES = [
   'Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis',
-  'Wilson','Anderson','Taylor','Thomas','Jackson','White','Harris',
-  'Martin','Thompson','Young','Walker','Allen','King','Wright','Scott',
-  'Green','Baker','Adams','Nelson','Carter','Mitchell','Perez',
-  'Rodriguez','Martinez','Hernandez','Lopez','Gonzalez','Sanchez',
-  'Müller','Schmidt','Fischer','Weber','Meyer','Wagner','Becker',
-  'Rossi','Ferrari','Russo','Colombo','Ricci','Marino','Greco',
-  'Dubois','Bernard','Thomas','Robert','Richard','Petit','Moreau',
-  'Tanaka','Suzuki','Sato','Watanabe','Ito','Yamamoto','Nakamura',
-  'Kim','Lee','Park','Choi','Jung','Kang','Cho','Yoon',
-  'Patel','Shah','Kumar','Singh','Sharma','Gupta','Verma','Joshi',
-  'Mensah','Osei','Agyei','Asante','Boateng','Owusu','Amoah',
-  'Ivanov','Petrov','Sidorov','Kuznetsov','Popov','Sokolov',
-  'Andersen','Nielsen','Hansen','Pedersen','Christensen','Jensen',
-  'Chen','Wang','Li','Zhang','Liu','Yang','Huang','Zhou',
-  'Ahmed','Hassan','Ali','Mohammed','Ibrahim','Khalil','Nasser',
+  'Rodriguez','Martinez','Hernandez','Lopez','Gonzalez','Wilson','Anderson',
+  'Thomas','Taylor','Moore','Jackson','Martin','Lee','Perez','Thompson',
+  'White','Harris','Sanchez','Clark','Ramirez','Lewis','Robinson',
+  'Walker','Young','Allen','King','Wright','Scott','Torres','Nguyen',
+  'Hill','Flores','Green','Adams','Nelson','Baker','Hall','Rivera',
+  'Campbell','Mitchell','Carter','Roberts','Phillips','Evans','Turner',
+  'Torres','Parker','Collins','Edwards','Stewart','Flores','Morris',
+  'Murphy','Cook','Rogers','Morgan','Peterson','Cooper','Reed','Bailey',
+  'Bell','Gomez','Kelly','Howard','Ward','Cox','Diaz','Richardson',
+  'Wood','Watson','Brooks','Bennett','Gray','James','Reyes','Cruz',
+  'Hughes','Price','Myers','Long','Foster','Sanders','Ross','Morales',
+  'Powell','Sullivan','Russell','Ortiz','Jenkins','Gutierrez','Perry','Butler',
+  'Barnes','Fisher','Henderson','Coleman','Simmons','Patterson','Jordan','Reynolds'
 ];
 
+// Separators and number patterns that look natural in email addresses
+const SEPS  = ['.', '_', ''];
+const NUMFN = [
+  () => '',
+  () => String(Math.floor(Math.random() * 99) + 1),
+  () => String(Math.floor(Math.random() * 999) + 1),
+  () => String(new Date().getFullYear() - Math.floor(Math.random() * 30 + 18)).slice(2)
+];
+
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function randomName() {
-  const f = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
-  const l = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
-  return { first: f, last: l };
+  const isMale = Math.random() < 0.5;
+  const first  = isMale ? pickRandom(MALE_FIRST) : pickRandom(FEMALE_FIRST);
+  const last   = pickRandom(LAST_NAMES);
+  return { first, last };
 }
 
-function buildUsername(first, last) {
-  const sep = ['.','-','_',''][Math.floor(Math.random()*4)];
-  const num = Math.random() < 0.4 ? Math.floor(Math.random()*9999) : '';
-  return (first + sep + last + num).toLowerCase().replace(/[^a-z0-9._-]/g,'');
+// Build a natural-looking email local part from first/last name
+function buildLocalPart(first, last) {
+  const f   = first.toLowerCase().replace(/[^a-z]/g, '');
+  const l   = last.toLowerCase().replace(/[^a-z]/g, '');
+  const sep = pickRandom(SEPS);
+  const num = pickRandom(NUMFN)();
+
+  // Several patterns that look like real people's emails
+  const patterns = [
+    () => f + sep + l + num,
+    () => f.charAt(0) + sep + l + num,
+    () => f + sep + l.charAt(0) + l.slice(1) + num,
+    () => l + sep + f.charAt(0) + num,
+    () => f + num,
+    () => f + sep + l,
+  ];
+  return pickRandom(patterns)().slice(0, 40); // GM has username length limits
 }
 
-// ── PAGE SWITCHER ─────────────────────────────────────────────────
-let currentPage = 'gm';
-function switchPage(page) {
-  currentPage = page;
-  document.getElementById('pageGM').classList.toggle('active', page === 'gm');
-  document.getElementById('pageTM').classList.toggle('active', page === 'tm');
-  document.getElementById('tabGM').classList.toggle('active', page === 'gm');
-  document.getElementById('tabTM').classList.toggle('active', page === 'tm');
-  document.getElementById('tabTM').classList.toggle('tm', page === 'tm');
+// ── PAGE SWITCH ──────────────────────────────────────────────────
+function switchPage(p) {
+  document.getElementById('pageGM').classList.toggle('active', p === 'gm');
+  document.getElementById('pageTM').classList.toggle('active', p === 'tm');
+  document.getElementById('tabGM').classList.toggle('active', p === 'gm');
+  document.getElementById('tabTM').classList.toggle('active', p === 'tm');
+  document.getElementById('tabTM').classList.toggle('tm', p === 'tm');
 }
 
-// ── PARTICLES ─────────────────────────────────────────────────────
+// ── PARTICLES (lightweight — 40 pts, requestAnimationFrame) ──────
 function initParticles() {
   const cv = document.getElementById('particles');
   const cx = cv.getContext('2d');
   let W = cv.width = innerWidth, H = cv.height = innerHeight;
-  const pts = Array.from({length:60}, () => ({
-    x: Math.random()*W, y: Math.random()*H,
-    vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
-    r: Math.random()*1.4+.3, a: Math.random()*.3+.07,
-    c: ['#ff1f3d','#00ffe0','#ffd700','#a855f7'][Math.floor(Math.random()*4)]
+
+  const COLORS = ['#ff1f3d','#00ffe0','#ffd700','#a855f7'];
+  const pts = Array.from({ length: 40 }, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    vx: (Math.random() - .5) * .3, vy: (Math.random() - .5) * .3,
+    r: Math.random() * 1.3 + .3,
+    a: Math.random() * .28 + .06,
+    c: COLORS[Math.floor(Math.random() * COLORS.length)]
   }));
-  const draw = () => {
-    cx.clearRect(0,0,W,H);
-    pts.forEach(p => {
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
-      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
-      cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      cx.fillStyle=p.c; cx.globalAlpha=p.a; cx.fill();
-    });
-    cx.globalAlpha=1; requestAnimationFrame(draw);
-  };
+
+  let raf;
+  function draw() {
+    cx.clearRect(0, 0, W, H);
+    for (const p of pts) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; else if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; else if (p.y > H) p.y = 0;
+      cx.globalAlpha = p.a;
+      cx.fillStyle   = p.c;
+      cx.beginPath();
+      cx.arc(p.x, p.y, p.r, 0, 6.2832);
+      cx.fill();
+    }
+    cx.globalAlpha = 1;
+    raf = requestAnimationFrame(draw);
+  }
   draw();
-  addEventListener('resize',()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;});
+
+  // Pause particles when tab hidden (saves CPU)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) cancelAnimationFrame(raf);
+    else draw();
+  });
+
+  addEventListener('resize', () => {
+    W = cv.width = innerWidth;
+    H = cv.height = innerHeight;
+  });
 }
 
-// ── TOAST ─────────────────────────────────────────────────────────
-function toast(msg, dur=2800) {
+// ── TOAST ────────────────────────────────────────────────────────
+let _toastT;
+function toast(msg, dur = 2800) {
   document.querySelector('.toast')?.remove();
-  const t = Object.assign(document.createElement('div'),{className:'toast',textContent:msg});
+  clearTimeout(_toastT);
+  const t = document.createElement('div');
+  t.className   = 'toast';
+  t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(), dur);
+  _toastT = setTimeout(() => t.remove(), dur);
 }
 
-// ── ESC ───────────────────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────────
 function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
-// ── DEVICE ID ─────────────────────────────────────────────────────
 function deviceId() {
   let id = localStorage.getItem('kbb_did');
-  if (!id) { id='kbb_'+Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('kbb_did',id); }
+  if (!id) { id = 'kbb_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('kbb_did', id); }
   return id;
 }
 
-// ── VISITOR COUNT ─────────────────────────────────────────────────
+// ── VISITOR COUNT ────────────────────────────────────────────────
 async function registerVisitor() {
   try {
-    const r = await fetch('/api/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deviceId:deviceId()})});
+    const r = await fetch('/api/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: deviceId() })
+    });
     const d = await r.json();
     document.getElementById('visitorCount').textContent = d.count.toLocaleString();
   } catch {}
 }
 
-// ── FOLLOW GATE ───────────────────────────────────────────────────
+// ── FOLLOW GATE ──────────────────────────────────────────────────
 function initGate() {
   const gate = document.getElementById('followGate');
   const app  = document.getElementById('app');
-  if (localStorage.getItem('kbb_unlocked')==='1') {
-    gate.style.display='none'; app.classList.remove('hidden');
-    registerVisitor(); return;
+  if (localStorage.getItem('kbb_unlocked') === '1') {
+    gate.style.display = 'none';
+    app.classList.remove('hidden');
+    registerVisitor();
+    return;
   }
-  document.getElementById('followBtn').addEventListener('click',()=>localStorage.setItem('kbb_tapped_follow','1'));
-  document.getElementById('unlockBtn').addEventListener('click',()=>{
-    if (!localStorage.getItem('kbb_tapped_follow')) { toast('⚠ Please tap JOIN WHATSAPP CHANNEL first!'); return; }
-    localStorage.setItem('kbb_unlocked','1');
-    gate.style.display='none'; app.classList.remove('hidden');
+  document.getElementById('followBtn').addEventListener('click', () => {
+    localStorage.setItem('kbb_tapped', '1');
+  });
+  document.getElementById('unlockBtn').addEventListener('click', () => {
+    if (!localStorage.getItem('kbb_tapped')) {
+      toast('⚠ Please tap JOIN WHATSAPP CHANNEL first!'); return;
+    }
+    localStorage.setItem('kbb_unlocked', '1');
+    gate.style.display = 'none';
+    app.classList.remove('hidden');
     registerVisitor();
   });
 }
 
-// ── DOMAIN CHIPS HELPER ───────────────────────────────────────────
-function buildChips(containerId, selectId, domains) {
-  const container = document.getElementById(containerId);
-  const select    = document.getElementById(selectId);
-  // Populate select
-  select.innerHTML = domains.map(d=>`<option value="${d}">${d}</option>`).join('');
-  // Build chips
-  container.innerHTML = domains.map(d=>`<span class="domain-chip" data-domain="${d}" onclick="selectDomain('${containerId}','${selectId}','${d}')">${d}</span>`).join('');
-  // Activate first
-  const first = container.querySelector('.domain-chip');
+// ── DOMAIN CHIPS BUILDER ─────────────────────────────────────────
+function buildChips(chipId, selectId, domains, onSelect) {
+  const sel  = document.getElementById(selectId);
+  const wrap = document.getElementById(chipId);
+
+  sel.innerHTML  = domains.map(d => `<option value="${d}">${d}</option>`).join('');
+  wrap.innerHTML = domains.map(d =>
+    `<span class="domain-chip" data-d="${d}" onclick="selectChip('${chipId}','${selectId}','${d}',null)">${d}</span>`
+  ).join('');
+
+  // Mark first active
+  const first = wrap.querySelector('.domain-chip');
   if (first) first.classList.add('active-chip');
 }
 
-function selectDomain(containerId, selectId, domain) {
+function selectChip(chipId, selectId, domain, _cb) {
   document.getElementById(selectId).value = domain;
-  document.querySelectorAll(`#${containerId} .domain-chip`).forEach(c=>{
-    c.classList.toggle('active-chip', c.dataset.domain === domain);
+  document.querySelectorAll(`#${chipId} .domain-chip`).forEach(c => {
+    c.classList.toggle('active-chip', c.dataset.d === domain);
   });
 }
 
-// ── VIEWER (shared) ───────────────────────────────────────────────
-let viewerDeleteFn = null;
-function openViewer(from, subject, date, bodyHtml, isHtml, deleteFn) {
-  document.getElementById('viewerMeta').innerHTML = `
+function gmOnDomainChange(v) { selectChip('gmChips', 'gmDomain', v, null); }
+function tmOnDomainChange(v) { selectChip('tmChips', 'tmDomain', v, null); }
+
+// ── SHARED VIEWER ────────────────────────────────────────────────
+let _viewerDelFn = null;
+
+function openViewer(from, subject, date, body, isHtml, delFn) {
+  _viewerDelFn = delFn;
+
+  document.getElementById('vMeta').innerHTML = `
     <div class="vm-from">FROM: ${esc(from)}</div>
     <div class="vm-sub">${esc(subject)}</div>
     <div class="vm-date">${esc(date)}</div>`;
 
-  const bodyEl = document.getElementById('viewerBody');
-  if (isHtml && bodyHtml) {
+  const vBody = document.getElementById('vBody');
+  vBody.innerHTML = '';
+
+  if (isHtml && body) {
     const iframe = document.createElement('iframe');
-    iframe.style.cssText='width:100%;border:none;min-height:300px;background:#fff;display:block';
-    iframe.sandbox='allow-same-origin';
-    bodyEl.innerHTML='';
-    bodyEl.appendChild(iframe);
+    iframe.style.cssText = 'width:100%;border:none;min-height:300px;background:#fff;display:block';
+    iframe.sandbox = 'allow-same-origin';
+    vBody.appendChild(iframe);
     iframe.contentDocument.open();
-    iframe.contentDocument.write(bodyHtml);
+    iframe.contentDocument.write(body);
     iframe.contentDocument.close();
-    setTimeout(()=>{try{iframe.style.height=iframe.contentDocument.body.scrollHeight+30+'px';}catch{}},300);
+    setTimeout(() => {
+      try { iframe.style.height = iframe.contentDocument.body.scrollHeight + 28 + 'px'; } catch {}
+    }, 350);
   } else {
-    bodyEl.innerHTML=`<pre style="white-space:pre-wrap;font-family:var(--ff-mono);font-size:13px;color:var(--txt)">${esc(bodyHtml||'(empty)')}</pre>`;
+    vBody.innerHTML = `<pre style="white-space:pre-wrap;font-family:var(--ff-mono);font-size:13px;color:var(--txt)">${esc(body || '(empty)')}</pre>`;
   }
 
-  viewerDeleteFn = deleteFn;
-  document.getElementById('viewerFooter').innerHTML =
-    `<button class="btn-del-email" onclick="viewerDeleteFn && viewerDeleteFn()">🗑 DELETE THIS EMAIL</button>`;
-  document.getElementById('viewerOverlay').style.display='flex';
+  document.getElementById('vFoot').innerHTML =
+    `<button class="btn-del-email" onclick="_viewerDelFn&&_viewerDelFn()">🗑 DELETE THIS EMAIL</button>`;
+
+  document.getElementById('viewerOverlay').style.display = 'flex';
 }
 
 function closeViewer() {
-  document.getElementById('viewerOverlay').style.display='none';
+  document.getElementById('viewerOverlay').style.display = 'none';
 }
 
-// ════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 //  GUERRILLA MAIL ENGINE
-// ════════════════════════════════════════════════════════════════════
-const gm = {
-  email:null, sid_token:null, mails:[], seqId:0,
-  pollTimer:null, countTimer:null, secsLeft:3600, polling:false
+// ════════════════════════════════════════════════════════════════
+const GM = {
+  email: null, sid: null, mails: [], seq: 0,
+  pollTmr: null, cntTmr: null, secsLeft: 3600, polling: false
 };
 
-async function gmLoadDomains() {
-  try {
-    const r = await fetch('/api/gm/domains');
-    const d = await r.json();
-    buildChips('gmDomainChips','gmDomain', d.domains);
-    // Suggest a random name
-    const n = randomName();
-    document.getElementById('gmFirstName').value = n.first;
-    document.getElementById('gmLastName').value  = n.last;
-  } catch { toast('⚠ Could not load GM domains'); }
+// All 8 GM domains hardcoded — no round-trip needed
+const GM_DOMAINS = [
+  'guerrillamailblock.com', 'grr.la', 'guerrillamail.info',
+  'guerrillamail.biz', 'guerrillamail.de', 'guerrillamail.net',
+  'guerrillamail.org', 'spam4.me'
+];
+
+function gmInit() {
+  buildChips('gmChips', 'gmDomain', GM_DOMAINS, null);
+  gmSetNewName(); // prefill a random name
+}
+
+function gmSetNewName() {
+  const n = randomName();
+  document.getElementById('gmFirst').value = n.first;
+  document.getElementById('gmLast').value  = n.last;
+  return n;
 }
 
 async function gmGenerate() {
-  const firstName = document.getElementById('gmFirstName').value.trim() || randomName().first;
-  const lastName  = document.getElementById('gmLastName').value.trim()  || randomName().last;
-  const domain    = document.getElementById('gmDomain').value;
-  const user      = buildUsername(firstName, lastName);
+  // Always assign a fresh random name on each generate
+  const n      = gmSetNewName();
+  const domain = document.getElementById('gmDomain').value || GM_DOMAINS[Math.floor(Math.random() * GM_DOMAINS.length)];
+  const local  = buildLocalPart(n.first, n.last);
 
-  const btn = document.getElementById('gmGenerateBtn');
-  btn.innerHTML='<span class="spin"></span> GENERATING...'; btn.disabled=true;
+  const btn = document.getElementById('gmGenBtn');
+  btn.innerHTML = '<span class="spin"></span> GENERATING…';
+  btn.disabled  = true;
 
-  gmStopPolling(); gm.mails=[]; gm.seqId=0;
-  gmRenderInbox([]);
-  document.getElementById('gmInboxSection').style.display='none';
-  document.getElementById('gmNewMailBanner').style.display='none';
+  gmStop();
+  GM.mails = []; GM.seq = 0;
+  gmRender([]);
+  document.getElementById('gmInbox').style.display  = 'none';
+  document.getElementById('gmBanner').style.display = 'none';
 
   try {
-    const url = domain ? `/api/gm/generate?user=${encodeURIComponent(user)}&domain=${encodeURIComponent(domain)}`
-                       : `/api/gm/generate`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(await r.text());
-    const d = await r.json();
+    const url = `/api/gm/generate?user=${encodeURIComponent(local)}&domain=${encodeURIComponent(domain)}`;
+    const r   = await fetch(url);
+    const d   = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
 
-    gm.email     = d.email;
-    gm.sid_token = d.sid_token;
-    gm.seqId     = 0;
+    GM.email = d.email;
+    GM.sid   = d.sid_token;
+    GM.seq   = 0;
 
-    document.getElementById('gmEmailAddr').textContent = gm.email;
-    document.getElementById('gmCopyBtn').style.display='flex';
-    document.getElementById('gmInboxBtn').disabled=false;
-    document.getElementById('gmInboxAddrTag').textContent = gm.email;
-    document.getElementById('gmInboxSection').style.display='block';
+    document.getElementById('gmAddr').textContent      = GM.email;
+    document.getElementById('gmCopyBtn').style.display = 'flex';
+    document.getElementById('gmCheckBtn').disabled     = false;
+    document.getElementById('gmInboxTag').textContent  = GM.email;
+    document.getElementById('gmInbox').style.display   = 'block';
 
     gmStartCountdown();
-    gmStartPolling();
-    toast(`✅ Shadow email ready! (${firstName} ${lastName})`);
-  } catch(err) {
-    document.getElementById('gmEmailAddr').innerHTML='<span class="addr-placeholder">⚠ Failed — try again</span>';
-    toast('❌ '+( err.message||'Could not generate email'));
+    gmStartPoll();
+    toast(`✅ Email ready — ${n.first} ${n.last}`);
+  } catch (err) {
+    document.getElementById('gmAddr').innerHTML = '<span class="addr-placeholder">⚠ Failed — try again</span>';
+    toast('❌ ' + (err.message || 'Generation failed'));
   }
-  btn.innerHTML='<span class="btn-icon">⚡</span> GENERATE EMAIL'; btn.disabled=false;
+
+  btn.innerHTML = '<span>⚡</span> GENERATE EMAIL';
+  btn.disabled  = false;
 }
 
 function gmStartCountdown() {
-  clearInterval(gm.countTimer);
-  gm.secsLeft=3600;
-  document.getElementById('gmCardFooter').style.display='flex';
-  const tick=()=>{
-    const m=String(Math.floor(gm.secsLeft/60)).padStart(2,'0');
-    const s=String(gm.secsLeft%60).padStart(2,'0');
-    document.getElementById('gmTimerVal').textContent=`${m}:${s}`;
-    if(gm.secsLeft<=0){clearInterval(gm.countTimer);gmStopPolling();toast('⏰ Session expired. Generate a new email.');}
-    gm.secsLeft--;
-  };
-  tick(); gm.countTimer=setInterval(tick,1000);
+  clearInterval(GM.cntTmr);
+  GM.secsLeft = 3600;
+  document.getElementById('gmFooter').style.display = 'flex';
+  GM.cntTmr = setInterval(() => {
+    const m = String(Math.floor(GM.secsLeft / 60)).padStart(2, '0');
+    const s = String(GM.secsLeft % 60).padStart(2, '0');
+    document.getElementById('gmTimer').textContent = `${m}:${s}`;
+    if (GM.secsLeft <= 0) { clearInterval(GM.cntTmr); gmStop(); toast('⏰ Session expired. Generate a new email.'); }
+    GM.secsLeft--;
+  }, 1000);
 }
 
-function gmStartPolling() {
-  if(gm.polling)return;
-  gm.polling=true; gmSetPollUI(true);
-  gmPollInbox();
-  gm.pollTimer=setInterval(gmPollInbox,5000);
+function gmStartPoll() {
+  if (GM.polling) return;
+  GM.polling = true;
+  gmSetPollUI(true);
+  gmPoll(); // immediate first check
+  GM.pollTmr = setInterval(gmPoll, 5000);
 }
 
-function gmStopPolling() {
-  clearInterval(gm.pollTimer); gm.pollTimer=null;
-  gm.polling=false; gmSetPollUI(false);
+function gmStop() {
+  clearInterval(GM.pollTmr); GM.pollTmr = null;
+  GM.polling = false; gmSetPollUI(false);
 }
 
-function gmSetPollUI(active) {
-  document.getElementById('gmPollDot').classList.toggle('active',active);
-  document.getElementById('gmPollLabel').textContent=active?'Auto-refresh: ON (5s)':'Auto-refresh: OFF';
+function gmSetPollUI(on) {
+  document.getElementById('gmPollDot').classList.toggle('active', on);
+  document.getElementById('gmPollLbl').textContent = on ? 'Auto-refresh: ON (5s)' : 'Auto-refresh: OFF';
 }
 
-async function gmPollInbox() {
-  if(!gm.sid_token)return;
+async function gmPoll() {
+  if (!GM.sid) return;
   try {
-    const r=await fetch(`/api/gm/check?sid_token=${encodeURIComponent(gm.sid_token)}&seq=${gm.seqId}`);
-    if(!r.ok)return;
-    const d=await r.json();
-    if(!d.list||!d.list.length)return;
-    let hasNew=false;
-    d.list.forEach(mail=>{
-      const id=String(mail.mail_id);
-      if(!gm.mails.find(m=>m.id===id)){
-        gm.mails.unshift({id,from:mail.mail_from||'Unknown',subject:mail.mail_subject||'(No Subject)',excerpt:mail.mail_excerpt||'',date:mail.mail_date||'',read:false});
-        if(parseInt(id)>gm.seqId)gm.seqId=parseInt(id);
-        hasNew=true;
-      }
-    });
-    if(hasNew){gmRenderInbox(gm.mails);gmShowNewBanner();}
+    const r = await fetch(`/api/gm/check?sid_token=${encodeURIComponent(GM.sid)}&seq=${GM.seq}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.list || !d.list.length) return;
+
+    let hasNew = false;
+    for (const m of d.list) {
+      const id = String(m.mail_id);
+      if (GM.mails.find(x => x.id === id)) continue;
+      GM.mails.unshift({ id, from: m.mail_from || 'Unknown', subject: m.mail_subject || '(No Subject)', date: m.mail_date || '', read: false });
+      if (parseInt(id) > GM.seq) GM.seq = parseInt(id);
+      hasNew = true;
+    }
+    if (hasNew) { gmRender(GM.mails); gmBanner('gm'); }
   } catch {}
 }
 
-function gmShowNewBanner() {
-  const b=document.getElementById('gmNewMailBanner');
-  b.style.display='block';
-  clearTimeout(gmShowNewBanner._t);
-  gmShowNewBanner._t=setTimeout(()=>b.style.display='none',4000);
-  document.getElementById('gmInboxSection').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
 async function gmManualCheck() {
-  if(!gm.sid_token)return;
-  const btn=document.getElementById('gmInboxBtn');
-  btn.innerHTML='<span class="spin"></span> SCANNING...'; btn.disabled=true;
-  await gmPollInbox();
-  btn.innerHTML='<span class="btn-icon">📬</span> CHECK INBOX'; btn.disabled=false;
-  document.getElementById('gmInboxSection').scrollIntoView({behavior:'smooth'});
+  if (!GM.sid) return;
+  const btn = document.getElementById('gmCheckBtn');
+  btn.innerHTML = '<span class="spin"></span> SCANNING…'; btn.disabled = true;
+  await gmPoll();
+  btn.innerHTML = '<span>📬</span> CHECK INBOX'; btn.disabled = false;
+  document.getElementById('gmInbox').scrollIntoView({ behavior: 'smooth' });
 }
 
-function gmRenderInbox(mails) {
-  const list=document.getElementById('gmInboxList');
-  if(!mails.length){
-    list.innerHTML=`<div class="inbox-empty"><div class="empty-icon">🥷</div><p>Inbox in stealth mode...<br><span>Auto-scanning every 5 seconds</span></p></div>`;
+async function gmRefresh() {
+  const btn = document.querySelector('#gmInbox .btn-refresh');
+  if (btn) { btn.textContent = '↻ SCANNING…'; btn.disabled = true; }
+  await gmPoll();
+  if (btn) { btn.textContent = '↻ REFRESH'; btn.disabled = false; }
+}
+
+function gmRender(mails) {
+  const el = document.getElementById('gmList');
+  if (!mails.length) {
+    el.innerHTML = `<div class="inbox-empty"><div class="empty-icon">🥷</div><p>Inbox in stealth mode…<br><span>Auto-scanning every 5 seconds</span></p></div>`;
     return;
   }
-  list.innerHTML=mails.map(m=>`
-    <div class="inbox-item ${m.read?'':'unread'}" onclick="gmOpenMail('${m.id}')">
-      <div class="inbox-item-icon">${m.read?'📧':'📩'}</div>
+  el.innerHTML = mails.map(m => `
+    <div class="inbox-item ${m.read ? '' : 'unread'}" onclick="gmOpen('${m.id}')">
+      <div class="inbox-item-icon">${m.read ? '📧' : '📩'}</div>
       <div class="i-info">
         <div class="i-from">${esc(m.from)}</div>
         <div class="i-subject">${esc(m.subject)}</div>
       </div>
       <div class="i-date">${esc(m.date)}</div>
-      <button class="i-del" onclick="event.stopPropagation();gmDeleteMail('${m.id}')" title="Delete">🗑</button>
+      <button class="i-del" onclick="event.stopPropagation();gmDel('${m.id}')" title="Delete">🗑</button>
     </div>`).join('');
 }
 
-async function gmOpenMail(id) {
-  const m=gm.mails.find(x=>x.id===id);
-  if(m){m.read=true;gmRenderInbox(gm.mails);}
-  document.getElementById('viewerMeta').innerHTML='<span style="color:var(--dim);font-family:var(--ff-mono)">Loading...</span>';
-  document.getElementById('viewerBody').innerHTML='';
-  document.getElementById('viewerFooter').innerHTML='';
-  document.getElementById('viewerOverlay').style.display='flex';
+async function gmOpen(id) {
+  const m = GM.mails.find(x => x.id === id);
+  if (m) { m.read = true; gmRender(GM.mails); }
+
+  document.getElementById('vMeta').innerHTML = '<span style="color:var(--dim);font-family:var(--ff-mono)">Loading…</span>';
+  document.getElementById('vBody').innerHTML = '';
+  document.getElementById('vFoot').innerHTML = '';
+  document.getElementById('viewerOverlay').style.display = 'flex';
+
   try {
-    const r=await fetch(`/api/gm/email/${id}?sid_token=${encodeURIComponent(gm.sid_token)}`);
-    const d=await r.json();
-    const isHtml=/<[a-z][\s\S]*>/i.test(d.body||'');
-    openViewer(d.from, d.subject, d.date, d.body, isHtml, ()=>gmDeleteMail(id,true));
+    const r = await fetch(`/api/gm/email/${id}?sid_token=${encodeURIComponent(GM.sid)}`);
+    if (!r.ok) throw new Error('not ok');
+    const d = await r.json();
+    const isHtml = /<[a-z][\s\S]*>/i.test(d.body || '');
+    openViewer(d.from, d.subject, d.date, d.body, isHtml, () => gmDel(id, true));
   } catch {
-    document.getElementById('viewerBody').innerHTML='<p style="color:var(--dim)">Could not load this email.</p>';
+    document.getElementById('vBody').innerHTML = '<p style="color:var(--dim)">Could not load email.</p>';
   }
 }
 
-async function gmDeleteMail(id, closeViewer=false) {
-  gm.mails=gm.mails.filter(m=>m.id!==id);
-  gmRenderInbox(gm.mails);
-  if(closeViewer) document.getElementById('viewerOverlay').style.display='none';
-  try{await fetch(`/api/gm/email/${id}?sid_token=${encodeURIComponent(gm.sid_token)}`,{method:'DELETE'});}catch{}
+async function gmDel(id, closeV = false) {
+  GM.mails = GM.mails.filter(m => m.id !== id);
+  gmRender(GM.mails);
+  if (closeV) closeViewer();
+  try { await fetch(`/api/gm/email/${id}?sid_token=${encodeURIComponent(GM.sid)}`, { method: 'DELETE' }); } catch {}
   toast('🗑 Email deleted');
 }
 
-function gmCopyEmail() {
-  if(!gm.email)return;
-  navigator.clipboard.writeText(gm.email).then(()=>{
-    const btn=document.getElementById('gmCopyBtn');
-    btn.textContent='✅ COPIED'; btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='⧉ COPY';btn.classList.remove('copied');},2000);
-    toast('📋 Email copied!');
+function gmCopy() {
+  if (!GM.email) return;
+  navigator.clipboard.writeText(GM.email).then(() => {
+    const b = document.getElementById('gmCopyBtn');
+    b.textContent = '✅ COPIED'; b.classList.add('copied');
+    setTimeout(() => { b.textContent = '⧉ COPY'; b.classList.remove('copied'); }, 2000);
+    toast('📋 Copied to clipboard!');
   });
 }
 
-// ════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
 //  MAIL.TM ENGINE
-// ════════════════════════════════════════════════════════════════════
-const tm = {
-  email:null, token:null, accountId:null, password:null,
-  mails:[], pollTimer:null, polling:false, seenIds:new Set()
+// ════════════════════════════════════════════════════════════════
+const TM = {
+  email: null, token: null, id: null,
+  mails: [], seenIds: new Set(),
+  pollTmr: null, polling: false
 };
 
-async function tmLoadDomains() {
+async function tmInit() {
   try {
-    const r=await fetch('/api/mailtm/domains');
-    const d=await r.json();
-    buildChips('tmDomainChips','tmDomain',d.domains);
-    const n=randomName();
-    document.getElementById('tmFirstName').value=n.first;
-    document.getElementById('tmLastName').value=n.last;
-  } catch { toast('⚠ Could not load Mail.tm domains'); }
+    const r = await fetch('/api/mailtm/domains');
+    const d = await r.json();
+    buildChips('tmChips', 'tmDomain', d.domains, null);
+  } catch {
+    buildChips('tmChips', 'tmDomain', ['mail.tm'], null);
+  }
+  tmSetNewName();
+}
+
+function tmSetNewName() {
+  const n = randomName();
+  document.getElementById('tmFirst').value = n.first;
+  document.getElementById('tmLast').value  = n.last;
+  return n;
 }
 
 async function tmGenerate() {
-  const firstName=document.getElementById('tmFirstName').value.trim()||randomName().first;
-  const lastName =document.getElementById('tmLastName').value.trim() ||randomName().last;
-  const domain   =document.getElementById('tmDomain').value;
-  if(!domain){toast('⚠ Please select a domain first');return;}
+  const n      = tmSetNewName(); // fresh name every time
+  const domain = document.getElementById('tmDomain').value;
+  if (!domain) { toast('⚠ No domain selected'); return; }
 
-  const user     =buildUsername(firstName,lastName);
-  const address  =`${user}@${domain}`;
-  const password ='Kbb'+Math.random().toString(36).slice(2,10)+'!9';
+  const local    = buildLocalPart(n.first, n.last);
+  const address  = `${local}@${domain}`;
+  // Strong enough password for Mail.tm (min 8 chars, mixed)
+  const password = 'Kx' + Math.random().toString(36).slice(2, 9) + 'Z9!';
 
-  const btn=document.getElementById('tmGenerateBtn');
-  btn.innerHTML='<span class="spin"></span> CREATING...'; btn.disabled=true;
+  const btn = document.getElementById('tmGenBtn');
+  btn.innerHTML = '<span class="spin"></span> CREATING…'; btn.disabled = true;
 
-  tmStopPolling(); tm.mails=[]; tm.seenIds=new Set();
-  tmRenderInbox([]);
-  document.getElementById('tmInboxSection').style.display='none';
-  document.getElementById('tmNewMailBanner').style.display='none';
+  tmStop();
+  TM.mails = []; TM.seenIds = new Set();
+  tmRender([]);
+  document.getElementById('tmInbox').style.display  = 'none';
+  document.getElementById('tmBanner').style.display = 'none';
 
   try {
-    const r=await fetch('/api/mailtm/generate',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({address,password})
+    const r = await fetch('/api/mailtm/generate', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ address, password })
     });
-    const d=await r.json();
-    if(d.error) throw new Error(d.error);
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
 
-    tm.email=d.email; tm.token=d.token; tm.accountId=d.id; tm.password=password;
+    TM.email = d.email;
+    TM.token = d.token;
+    TM.id    = d.id;
 
-    document.getElementById('tmEmailAddr').textContent=tm.email;
-    document.getElementById('tmCopyBtn').style.display='flex';
-    document.getElementById('tmInboxBtn').disabled=false;
-    document.getElementById('tmInboxAddrTag').textContent=tm.email;
-    document.getElementById('tmCardFooter').style.display='flex';
-    document.getElementById('tmPassNote').style.display='block';
-    document.getElementById('tmInboxSection').style.display='block';
+    document.getElementById('tmAddr').textContent      = TM.email;
+    document.getElementById('tmCopyBtn').style.display = 'flex';
+    document.getElementById('tmCheckBtn').disabled     = false;
+    document.getElementById('tmInboxTag').textContent  = TM.email;
+    document.getElementById('tmFooter').style.display  = 'flex';
+    document.getElementById('tmPassNote').style.display = 'block';
+    document.getElementById('tmInbox').style.display   = 'block';
 
-    tmStartPolling();
-    toast(`✅ Ghost mailbox ready! (${firstName} ${lastName})`);
-  } catch(err) {
-    document.getElementById('tmEmailAddr').innerHTML='<span class="addr-placeholder">⚠ Failed — try again</span>';
-    toast('❌ '+(err.message||'Could not create mailbox'));
+    tmStartPoll();
+    toast(`✅ Mailbox ready — ${n.first} ${n.last}`);
+  } catch (err) {
+    document.getElementById('tmAddr').innerHTML = '<span class="addr-placeholder">⚠ Failed — try again</span>';
+    toast('❌ ' + (err.message || 'Creation failed'));
   }
-  btn.innerHTML='<span class="btn-icon">🌐</span> CREATE MAILBOX'; btn.disabled=false;
+
+  btn.innerHTML = '<span>🌐</span> CREATE MAILBOX'; btn.disabled = false;
 }
 
-function tmStartPolling() {
-  if(tm.polling)return;
-  tm.polling=true; tmSetPollUI(true);
-  tmPollInbox();
-  tm.pollTimer=setInterval(tmPollInbox,6000);
+function tmStartPoll() {
+  if (TM.polling) return;
+  TM.polling = true; tmSetPollUI(true);
+  tmPoll();
+  TM.pollTmr = setInterval(tmPoll, 6000);
 }
 
-function tmStopPolling() {
-  clearInterval(tm.pollTimer); tm.pollTimer=null;
-  tm.polling=false; tmSetPollUI(false);
+function tmStop() {
+  clearInterval(TM.pollTmr); TM.pollTmr = null;
+  TM.polling = false; tmSetPollUI(false);
 }
 
-function tmSetPollUI(active) {
-  document.getElementById('tmPollDot').classList.toggle('active',active);
-  document.getElementById('tmPollLabel').textContent=active?'Auto-refresh: ON (6s)':'Auto-refresh: OFF';
+function tmSetPollUI(on) {
+  document.getElementById('tmPollDot').classList.toggle('active', on);
+  document.getElementById('tmPollLbl').textContent = on ? 'Auto-refresh: ON (6s)' : 'Auto-refresh: OFF';
 }
 
-async function tmPollInbox() {
-  if(!tm.token)return;
+async function tmPoll() {
+  if (!TM.token) return;
   try {
-    const r=await fetch(`/api/mailtm/messages?token=${encodeURIComponent(tm.token)}`);
-    if(!r.ok)return;
-    const d=await r.json();
-    let hasNew=false;
-    (d.list||[]).forEach(msg=>{
-      if(!tm.seenIds.has(msg.id)){
-        tm.seenIds.add(msg.id);
-        tm.mails.unshift({id:msg.id,from:msg.from,subject:msg.subject,date:msg.date,read:msg.seen});
-        hasNew=true;
-      }
-    });
-    // Also update read status
-    (d.list||[]).forEach(msg=>{
-      const local=tm.mails.find(m=>m.id===msg.id);
-      if(local) local.read=msg.seen;
-    });
-    if(hasNew){tmRenderInbox(tm.mails);tmShowNewBanner();}
-    else if(d.list) tmRenderInbox(tm.mails); // refresh read state
+    const r = await fetch(`/api/mailtm/messages?token=${encodeURIComponent(TM.token)}`);
+    if (r.status === 401) { tmStop(); toast('⚠ Session expired. Create a new mailbox.'); return; }
+    if (!r.ok) return;
+    const d = await r.json();
+
+    let hasNew = false;
+    for (const m of (d.list || [])) {
+      if (TM.seenIds.has(m.id)) continue;
+      TM.seenIds.add(m.id);
+      TM.mails.unshift({ id: m.id, from: m.from, subject: m.subject, date: m.date, read: m.seen });
+      hasNew = true;
+    }
+    // Refresh read state for existing
+    for (const m of (d.list || [])) {
+      const local = TM.mails.find(x => x.id === m.id);
+      if (local && m.seen) local.read = true;
+    }
+    if (hasNew) { tmRender(TM.mails); gmBanner('tm'); }
+    else if (d.list) tmRender(TM.mails);
   } catch {}
 }
 
-function tmShowNewBanner() {
-  const b=document.getElementById('tmNewMailBanner');
-  b.style.display='block';
-  clearTimeout(tmShowNewBanner._t);
-  tmShowNewBanner._t=setTimeout(()=>b.style.display='none',4000);
-  document.getElementById('tmInboxSection').scrollIntoView({behavior:'smooth',block:'start'});
-}
-
 async function tmManualCheck() {
-  if(!tm.token)return;
-  const btn=document.getElementById('tmInboxBtn');
-  btn.innerHTML='<span class="spin"></span> SCANNING...'; btn.disabled=true;
-  await tmPollInbox();
-  btn.innerHTML='<span class="btn-icon">📬</span> CHECK INBOX'; btn.disabled=false;
-  document.getElementById('tmInboxSection').scrollIntoView({behavior:'smooth'});
+  if (!TM.token) return;
+  const btn = document.getElementById('tmCheckBtn');
+  btn.innerHTML = '<span class="spin"></span> SCANNING…'; btn.disabled = true;
+  await tmPoll();
+  btn.innerHTML = '<span>📬</span> CHECK INBOX'; btn.disabled = false;
+  document.getElementById('tmInbox').scrollIntoView({ behavior: 'smooth' });
 }
 
-function tmRenderInbox(mails) {
-  const list=document.getElementById('tmInboxList');
-  if(!mails.length){
-    list.innerHTML=`<div class="inbox-empty"><div class="empty-icon">👻</div><p>Ghost inbox active...<br><span>Auto-scanning every 6 seconds</span></p></div>`;
+async function tmRefresh() {
+  const btn = document.querySelector('#tmInbox .btn-refresh');
+  if (btn) { btn.textContent = '↻ SCANNING…'; btn.disabled = true; }
+  await tmPoll();
+  if (btn) { btn.textContent = '↻ REFRESH'; btn.disabled = false; }
+}
+
+function tmRender(mails) {
+  const el = document.getElementById('tmList');
+  if (!mails.length) {
+    el.innerHTML = `<div class="inbox-empty"><div class="empty-icon">👻</div><p>Ghost inbox active…<br><span>Auto-scanning every 6 seconds</span></p></div>`;
     return;
   }
-  list.innerHTML=mails.map(m=>`
-    <div class="inbox-item ${m.read?'':'unread'}" onclick="tmOpenMail('${m.id}')">
-      <div class="inbox-item-icon">${m.read?'📧':'📩'}</div>
+  el.innerHTML = mails.map(m => {
+    const dt = m.date ? m.date.slice(0, 16).replace('T', ' ') : '';
+    return `
+    <div class="inbox-item ${m.read ? '' : 'unread'}" onclick="tmOpen('${m.id}')">
+      <div class="inbox-item-icon">${m.read ? '📧' : '📩'}</div>
       <div class="i-info">
         <div class="i-from">${esc(m.from)}</div>
         <div class="i-subject">${esc(m.subject)}</div>
       </div>
-      <div class="i-date">${esc(m.date.slice(0,16).replace('T',' '))}</div>
-      <button class="i-del" onclick="event.stopPropagation();tmDeleteMail('${m.id}')" title="Delete">🗑</button>
-    </div>`).join('');
+      <div class="i-date">${esc(dt)}</div>
+      <button class="i-del" onclick="event.stopPropagation();tmDel('${m.id}')" title="Delete">🗑</button>
+    </div>`;
+  }).join('');
 }
 
-async function tmOpenMail(id) {
-  const m=tm.mails.find(x=>x.id===id);
-  if(m){m.read=true;tmRenderInbox(tm.mails);}
-  document.getElementById('viewerMeta').innerHTML='<span style="color:var(--dim);font-family:var(--ff-mono)">Loading...</span>';
-  document.getElementById('viewerBody').innerHTML='';
-  document.getElementById('viewerFooter').innerHTML='';
-  document.getElementById('viewerOverlay').style.display='flex';
+async function tmOpen(id) {
+  const m = TM.mails.find(x => x.id === id);
+  if (m) { m.read = true; tmRender(TM.mails); }
+
+  document.getElementById('vMeta').innerHTML = '<span style="color:var(--dim);font-family:var(--ff-mono)">Loading…</span>';
+  document.getElementById('vBody').innerHTML = '';
+  document.getElementById('vFoot').innerHTML = '';
+  document.getElementById('viewerOverlay').style.display = 'flex';
+
   try {
-    const r=await fetch(`/api/mailtm/message/${id}?token=${encodeURIComponent(tm.token)}`);
-    const d=await r.json();
-    openViewer(d.from, d.subject, d.date?.slice(0,16).replace('T',' '), d.body, d.isHtml, ()=>tmDeleteMail(id,true));
+    const r = await fetch(`/api/mailtm/message/${id}?token=${encodeURIComponent(TM.token)}`);
+    if (!r.ok) throw new Error('not ok');
+    const d = await r.json();
+    openViewer(d.from, d.subject, d.date ? d.date.slice(0, 16).replace('T', ' ') : '', d.body, d.isHtml, () => tmDel(id, true));
   } catch {
-    document.getElementById('viewerBody').innerHTML='<p style="color:var(--dim)">Could not load this email.</p>';
+    document.getElementById('vBody').innerHTML = '<p style="color:var(--dim)">Could not load email.</p>';
   }
 }
 
-async function tmDeleteMail(id, closeViewer_=false) {
-  tm.mails=tm.mails.filter(m=>m.id!==id);
-  tm.seenIds.delete(id);
-  tmRenderInbox(tm.mails);
-  if(closeViewer_) closeViewer();
-  try{await fetch(`/api/mailtm/message/${id}?token=${encodeURIComponent(tm.token)}`,{method:'DELETE'});}catch{}
+async function tmDel(id, closeV = false) {
+  TM.mails    = TM.mails.filter(m => m.id !== id);
+  TM.seenIds.delete(id);
+  tmRender(TM.mails);
+  if (closeV) closeViewer();
+  try { await fetch(`/api/mailtm/message/${id}?token=${encodeURIComponent(TM.token)}`, { method: 'DELETE' }); } catch {}
   toast('🗑 Email deleted');
 }
 
-function tmCopyEmail() {
-  if(!tm.email)return;
-  navigator.clipboard.writeText(tm.email).then(()=>{
-    const btn=document.getElementById('tmCopyBtn');
-    btn.textContent='✅ COPIED'; btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='⧉ COPY';btn.classList.remove('copied');},2000);
-    toast('📋 Email copied!');
+function tmCopy() {
+  if (!TM.email) return;
+  navigator.clipboard.writeText(TM.email).then(() => {
+    const b = document.getElementById('tmCopyBtn');
+    b.textContent = '✅ COPIED'; b.classList.add('copied');
+    setTimeout(() => { b.textContent = '⧉ COPY'; b.classList.remove('copied'); }, 2000);
+    toast('📋 Copied to clipboard!');
   });
 }
 
-// ── BOOT ──────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
+// ── SHARED NEW MAIL BANNER ────────────────────────────────────────
+let _bannerT = {};
+function gmBanner(engine) {
+  const id = engine === 'gm' ? 'gmBanner' : 'tmBanner';
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  clearTimeout(_bannerT[engine]);
+  _bannerT[engine] = setTimeout(() => { el.style.display = 'none'; }, 4500);
+  const section = document.getElementById(engine === 'gm' ? 'gmInbox' : 'tmInbox');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
   initParticles();
   initGate();
-  gmLoadDomains();
-  tmLoadDomains();
-
-  // Viewer close
-  document.getElementById('viewerClose').addEventListener('click', closeViewer);
-  document.getElementById('viewerOverlay').addEventListener('click',e=>{
-    if(e.target===e.currentTarget) closeViewer();
-  });
-
-  // Suggest new random name on input focus if empty
-  ['gmFirstName','gmLastName','tmFirstName','tmLastName'].forEach(id=>{
-    document.getElementById(id).addEventListener('focus',function(){
-      if(!this.value){
-        const n=randomName();
-        if(id.includes('First')) this.placeholder=n.first;
-        else this.placeholder=n.last;
-      }
-    });
-  });
-
-  // Sync domain chips when select changes
-  document.getElementById('gmDomain').addEventListener('change',function(){
-    selectDomain('gmDomainChips','gmDomain',this.value);
-  });
-  document.getElementById('tmDomain').addEventListener('change',function(){
-    selectDomain('tmDomainChips','tmDomain',this.value);
-  });
+  gmInit();
+  tmInit();
 });

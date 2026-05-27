@@ -15,18 +15,13 @@
 <!-- ── FOLLOW GATE ── -->
 <div id="followGate" class="gate-overlay">
   <div class="gate-box">
-    <div class="gate-ninja">🥷</div>
+    <span class="gate-ninja">🥷</span>
     <div class="gate-badge">ACCESS REQUIRED</div>
     <h2 class="gate-title">SHADOW NINJA<br><span>PROTOCOL</span></h2>
-    <p class="gate-desc">
-      To unlock <strong>KingBadBoi TempMail</strong> you must join our WhatsApp channel first.
-      One tap — then come back and unlock.
-    </p>
-    <a id="followBtn" href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="btn-whatsapp">
-      📲 JOIN WHATSAPP CHANNEL
-    </a>
-    <button id="unlockBtn" class="btn-unlock">✅ I've Followed — UNLOCK</button>
-    <p class="gate-hint">* You must tap the channel link above first</p>
+    <p class="gate-desc">To unlock <strong>KingBadBoi TempMail</strong> join our WhatsApp channel first. One tap — then come back and unlock.</p>
+    <a id="followBtn" href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="btn-whatsapp">📲 JOIN WHATSAPP CHANNEL</a>
+    <button id="unlockBtn" class="btn-unlock">✅ I've Joined — UNLOCK</button>
+    <p class="gate-hint">* Tap the channel link above first</p>
   </div>
 </div>
 
@@ -38,225 +33,168 @@
       <span class="logo-ninja">🥷</span>
       <div>
         <div class="logo-king">KINGBADBOI</div>
-        <div class="logo-sub">TEMPMAIL &middot; <em>Shadow Ninja v3</em></div>
+        <div class="logo-sub">TEMPMAIL &middot; <em>Shadow Ninja</em></div>
       </div>
     </div>
     <div class="header-right">
-      <div class="visitor-pill">
-        <span class="vpulse"></span>
-        <span id="visitorCount">0</span>&nbsp;VISITORS
-      </div>
+      <div class="visitor-pill"><span class="vpulse"></span><span id="visitorCount">0</span>&nbsp;VISITORS</div>
       <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank" class="wa-pill">📲 CHANNEL</a>
     </div>
   </header>
 
-  <!-- ── PAGE NAV ── -->
   <nav class="page-nav">
     <button class="page-tab active" id="tabGM" onclick="switchPage('gm')">⚡ GUERRILLA MAIL</button>
     <button class="page-tab" id="tabTM" onclick="switchPage('tm')">🌐 MAIL.TM</button>
   </nav>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!--  PAGE 1: GUERRILLA MAIL                       -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- ══ PAGE: GUERRILLA MAIL ══ -->
   <div id="pageGM" class="page active">
-
     <section class="hero">
-      <div class="powered-strip">⚡ POWERED BY GUERRILLA MAIL &nbsp;·&nbsp; SHADOW NINJA ENGINE</div>
+      <div class="powered-strip">⚡ POWERED BY GUERRILLA MAIL · SHADOW NINJA</div>
       <h1 class="hero-title">
         <span class="glitch" data-text="SHADOW">SHADOW</span>
         <span class="hero-red">INBOX</span>
       </h1>
-      <p class="hero-sub">Instant anonymous disposable email. No registration. No traces. Auto-refresh inbox.</p>
+      <p class="hero-sub">Instant anonymous disposable email. No registration. No traces. Auto-refresh every 5s.</p>
     </section>
 
-    <!-- Controls -->
-    <div class="controls-row" style="max-width:860px;margin:0 auto;padding:0 20px">
+    <div class="controls-row">
       <div class="ctrl-group">
         <label class="ctrl-label">FIRST NAME</label>
-        <input class="ctrl-input" id="gmFirstName" placeholder="e.g. James" maxlength="20"/>
+        <input class="ctrl-input" id="gmFirst" placeholder="Auto-generated" maxlength="24" readonly/>
       </div>
       <div class="ctrl-group">
         <label class="ctrl-label">LAST NAME</label>
-        <input class="ctrl-input" id="gmLastName" placeholder="e.g. Wilson" maxlength="20"/>
+        <input class="ctrl-input" id="gmLast" placeholder="Auto-generated" maxlength="24" readonly/>
       </div>
       <div class="ctrl-group">
         <label class="ctrl-label">DOMAIN</label>
-        <select class="ctrl-select" id="gmDomain">
-          <option value="">Loading domains...</option>
+        <select class="ctrl-select" id="gmDomain" onchange="gmOnDomainChange(this.value)">
+          <option value="">Loading…</option>
         </select>
       </div>
     </div>
 
-    <!-- Domain chips -->
-    <div class="domain-chips" id="gmDomainChips"></div>
+    <div class="domain-chips" id="gmChips"></div>
 
-    <!-- Email Card -->
-    <div style="max-width:860px;margin:0 auto;padding:0 20px">
-      <div class="email-card" id="gmEmailCard">
+    <div class="card-wrap">
+      <div class="email-card">
         <div class="card-top-bar"></div>
         <div class="card-label">YOUR SHADOW EMAIL ADDRESS</div>
         <div class="email-row">
-          <div class="email-addr" id="gmEmailAddr">
-            <span class="addr-placeholder">— configure above and press GENERATE —</span>
-          </div>
-          <button class="copy-btn" id="gmCopyBtn" style="display:none" onclick="gmCopyEmail()">⧉ COPY</button>
+          <div class="email-addr" id="gmAddr"><span class="addr-placeholder">— press GENERATE to summon —</span></div>
+          <button class="copy-btn" id="gmCopyBtn" style="display:none" onclick="gmCopy()">⧉ COPY</button>
         </div>
         <div class="card-actions">
-          <button class="btn-gen" id="gmGenerateBtn" onclick="gmGenerate()">
-            <span class="btn-icon">⚡</span> GENERATE EMAIL
-          </button>
-          <button class="btn-inbox" id="gmInboxBtn" disabled onclick="gmManualCheck()">
-            <span class="btn-icon">📬</span> CHECK INBOX
-          </button>
+          <button class="btn-gen" id="gmGenBtn" onclick="gmGenerate()"><span>⚡</span> GENERATE EMAIL</button>
+          <button class="btn-inbox" id="gmCheckBtn" disabled onclick="gmManualCheck()"><span>📬</span> CHECK INBOX</button>
         </div>
-        <div class="card-footer" id="gmCardFooter" style="display:none">
-          <div class="timer-wrap">
-            <span class="timer-dot"></span>
-            ACTIVE &nbsp;·&nbsp; Expires in <span id="gmTimerVal">60:00</span>
-          </div>
-          <div class="poll-status">
-            <span class="poll-dot" id="gmPollDot"></span>
-            <span id="gmPollLabel">Auto-refresh: OFF</span>
-          </div>
+        <div class="card-footer" id="gmFooter" style="display:none">
+          <div class="timer-wrap"><span class="timer-dot"></span>ACTIVE · Expires <span id="gmTimer">60:00</span></div>
+          <div class="poll-status"><span class="poll-dot" id="gmPollDot"></span><span id="gmPollLbl">Auto-refresh: OFF</span></div>
         </div>
       </div>
-      <div class="credit-tag" style="margin-top:10px">
-        Disposable emails via <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a>
-        &nbsp;·&nbsp; KingBadBoi Shadow Ninja
-      </div>
+      <div class="credit-tag">Disposable emails via <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a> · KingBadBoi Shadow Ninja</div>
     </div>
 
-    <!-- Inbox -->
-    <section id="gmInboxSection" class="inbox-section" style="display:none">
+    <section id="gmInbox" class="inbox-section" style="display:none">
       <div class="inbox-head">
         <h2>📬 SHADOW INBOX</h2>
-        <div class="inbox-addr-tag" id="gmInboxAddrTag"></div>
-        <button class="btn-refresh" id="gmRefreshBtn" onclick="gmPollInbox()">↻ REFRESH NOW</button>
+        <div class="inbox-addr-tag" id="gmInboxTag"></div>
+        <button class="btn-refresh" onclick="gmRefresh()">↻ REFRESH</button>
       </div>
-      <div class="new-mail-banner" id="gmNewMailBanner" style="display:none">🔔 NEW MESSAGE ARRIVED!</div>
-      <div id="gmInboxList" class="inbox-list">
-        <div class="inbox-empty">
-          <div class="empty-icon">🥷</div>
-          <p>Inbox in stealth mode...<br><span>Waiting for messages</span></p>
-        </div>
+      <div class="new-mail-banner" id="gmBanner" style="display:none">🔔 NEW MESSAGE ARRIVED!</div>
+      <div id="gmList" class="inbox-list">
+        <div class="inbox-empty"><div class="empty-icon">🥷</div><p>Inbox in stealth mode…<br><span>Waiting for messages</span></p></div>
       </div>
     </section>
   </div><!-- /pageGM -->
 
-
-  <!-- ══════════════════════════════════════════════ -->
-  <!--  PAGE 2: MAIL.TM                              -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- ══ PAGE: MAIL.TM ══ -->
   <div id="pageTM" class="page">
-
     <section class="hero">
-      <div class="powered-strip tm-strip">🌐 POWERED BY MAIL.TM &nbsp;·&nbsp; SHADOW NINJA ENGINE</div>
+      <div class="powered-strip tm-strip">🌐 POWERED BY MAIL.TM · SHADOW NINJA</div>
       <h1 class="hero-title">
         <span class="glitch" data-text="GHOST">GHOST</span>
         <span class="hero-purple">MAILBOX</span>
       </h1>
-      <p class="hero-sub">Persistent anonymous inbox powered by Mail.tm. Real names. All domains available.</p>
+      <p class="hero-sub">Persistent anonymous inbox via Mail.tm. Real US names. All domains. Auto-refresh every 6s.</p>
     </section>
 
-    <!-- Controls -->
-    <div class="controls-row" style="max-width:860px;margin:0 auto;padding:0 20px">
+    <div class="controls-row">
       <div class="ctrl-group">
         <label class="ctrl-label">FIRST NAME</label>
-        <input class="ctrl-input" id="tmFirstName" placeholder="e.g. Sofia" maxlength="20"/>
+        <input class="ctrl-input" id="tmFirst" placeholder="Auto-generated" maxlength="24" readonly/>
       </div>
       <div class="ctrl-group">
         <label class="ctrl-label">LAST NAME</label>
-        <input class="ctrl-input" id="tmLastName" placeholder="e.g. Martinez" maxlength="20"/>
+        <input class="ctrl-input" id="tmLast" placeholder="Auto-generated" maxlength="24" readonly/>
       </div>
       <div class="ctrl-group">
         <label class="ctrl-label">DOMAIN</label>
-        <select class="ctrl-select" id="tmDomain">
-          <option value="">Loading domains...</option>
+        <select class="ctrl-select" id="tmDomain" onchange="tmOnDomainChange(this.value)">
+          <option value="">Loading…</option>
         </select>
       </div>
     </div>
 
-    <!-- Domain chips -->
-    <div class="domain-chips" id="tmDomainChips"></div>
+    <div class="domain-chips" id="tmChips"></div>
 
-    <!-- Email Card -->
-    <div style="max-width:860px;margin:0 auto;padding:0 20px">
-      <div class="email-card" id="tmEmailCard">
+    <div class="card-wrap">
+      <div class="email-card">
         <div class="card-top-bar tm-bar"></div>
         <div class="card-label">YOUR GHOST EMAIL ADDRESS</div>
         <div class="email-row">
-          <div class="email-addr" id="tmEmailAddr">
-            <span class="addr-placeholder">— configure above and press GENERATE —</span>
-          </div>
-          <button class="copy-btn" id="tmCopyBtn" style="display:none" onclick="tmCopyEmail()">⧉ COPY</button>
+          <div class="email-addr" id="tmAddr"><span class="addr-placeholder">— press CREATE to summon —</span></div>
+          <button class="copy-btn" id="tmCopyBtn" style="display:none" onclick="tmCopy()">⧉ COPY</button>
         </div>
         <div class="card-actions">
-          <button class="btn-gen tm-gen" id="tmGenerateBtn" onclick="tmGenerate()">
-            <span class="btn-icon">🌐</span> CREATE MAILBOX
-          </button>
-          <button class="btn-inbox" id="tmInboxBtn" disabled onclick="tmManualCheck()">
-            <span class="btn-icon">📬</span> CHECK INBOX
-          </button>
+          <button class="btn-gen tm-gen" id="tmGenBtn" onclick="tmGenerate()"><span>🌐</span> CREATE MAILBOX</button>
+          <button class="btn-inbox" id="tmCheckBtn" disabled onclick="tmManualCheck()"><span>📬</span> CHECK INBOX</button>
         </div>
-        <div class="card-footer" id="tmCardFooter" style="display:none">
-          <div class="timer-wrap">
-            <span class="timer-dot" style="background:var(--purple)"></span>
-            <span style="color:var(--purple)">MAILBOX ACTIVE</span>
-          </div>
-          <div class="poll-status">
-            <span class="poll-dot" id="tmPollDot"></span>
-            <span id="tmPollLabel">Auto-refresh: OFF</span>
-          </div>
+        <div class="card-footer" id="tmFooter" style="display:none">
+          <div class="timer-wrap"><span class="timer-dot" style="background:var(--purple)"></span><span style="color:var(--purple)">MAILBOX ACTIVE</span></div>
+          <div class="poll-status"><span class="poll-dot" id="tmPollDot"></span><span id="tmPollLbl">Auto-refresh: OFF</span></div>
         </div>
-        <p class="tm-pass-note" id="tmPassNote" style="display:none">🔑 Auto-generated password saved in session</p>
+        <div class="tm-pass-note" id="tmPassNote" style="display:none">🔑 Password stored in session memory only</div>
       </div>
-      <div class="credit-tag" style="margin-top:10px">
-        Persistent inbox via <a href="https://mail.tm" target="_blank">Mail.tm</a>
-        &nbsp;·&nbsp; KingBadBoi Shadow Ninja
-      </div>
+      <div class="credit-tag">Persistent inbox via <a href="https://mail.tm" target="_blank">Mail.tm</a> · KingBadBoi Shadow Ninja</div>
     </div>
 
-    <!-- Inbox -->
-    <section id="tmInboxSection" class="inbox-section" style="display:none">
+    <section id="tmInbox" class="inbox-section" style="display:none">
       <div class="inbox-head">
         <h2>👻 GHOST INBOX</h2>
-        <div class="inbox-addr-tag" id="tmInboxAddrTag"></div>
-        <button class="btn-refresh" id="tmRefreshBtn" onclick="tmPollInbox()">↻ REFRESH NOW</button>
+        <div class="inbox-addr-tag" id="tmInboxTag"></div>
+        <button class="btn-refresh" onclick="tmRefresh()">↻ REFRESH</button>
       </div>
-      <div class="new-mail-banner" id="tmNewMailBanner" style="display:none">🔔 NEW MESSAGE ARRIVED!</div>
-      <div id="tmInboxList" class="inbox-list">
-        <div class="inbox-empty">
-          <div class="empty-icon">👻</div>
-          <p>Ghost inbox active...<br><span>Waiting for messages</span></p>
-        </div>
+      <div class="new-mail-banner" id="tmBanner" style="display:none">🔔 NEW MESSAGE ARRIVED!</div>
+      <div id="tmList" class="inbox-list">
+        <div class="inbox-empty"><div class="empty-icon">👻</div><p>Ghost inbox active…<br><span>Waiting for messages</span></p></div>
       </div>
     </section>
   </div><!-- /pageTM -->
 
-
-  <!-- ── SHARED EMAIL VIEWER MODAL ── -->
-  <div id="viewerOverlay" class="viewer-overlay" style="display:none">
+  <!-- ── SHARED VIEWER ── -->
+  <div id="viewerOverlay" class="viewer-overlay" style="display:none" onclick="if(event.target===this)closeViewer()">
     <div class="viewer-box">
       <div class="viewer-topbar">
         <span>📧 MESSAGE VIEWER</span>
-        <button id="viewerClose" class="viewer-close-btn">✕ CLOSE</button>
+        <button class="viewer-close-btn" onclick="closeViewer()">✕ CLOSE</button>
       </div>
-      <div class="viewer-meta" id="viewerMeta"></div>
-      <div class="viewer-body" id="viewerBody"></div>
-      <div class="viewer-footer" id="viewerFooter"></div>
+      <div class="viewer-meta" id="vMeta"></div>
+      <div class="viewer-body" id="vBody"></div>
+      <div class="viewer-footer" id="vFoot"></div>
     </div>
   </div>
 
   <footer>
-    <span>🥷 KingBadBoi TempMail · Shadow Ninja v3</span>
+    <span>🥷 KingBadBoi TempMail · Shadow Ninja</span>
     <span>GM: <a href="https://www.guerrillamail.com" target="_blank">Guerrilla Mail</a></span>
     <span>TM: <a href="https://mail.tm" target="_blank">Mail.tm</a></span>
     <a href="https://whatsapp.com/channel/0029Vb7ivq9HLHQcS4XgQu2Q" target="_blank">📲 Join Channel</a>
   </footer>
 
 </div><!-- /app -->
-
 <script src="script.js"></script>
 </body>
 </html>
