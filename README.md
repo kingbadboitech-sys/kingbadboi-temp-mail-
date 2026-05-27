@@ -1,45 +1,29 @@
-# 🥷 KingBadBoi TempMail v3 — Shadow Ninja
+# 🥷 KingBadBoi TempMail v3.1
 
-Two-engine disposable email service with real people names and all available domains.
+Two-engine disposable email — Guerrilla Mail + Mail.tm.
 
-## Engines
-- **Guerrilla Mail** — instant, no-account, 8+ domains
-- **Mail.tm** — persistent mailbox, real account, 10+ domains
-
-## Project Structure
+## Structure
 ```
 kingbadboi-tempmail/
-├── server.js          ← Express backend (all API routes)
-├── package.json
+├── server.js          ← Express backend
+├── package.json       ← node-fetch v2 (CommonJS)
 └── public/
-    ├── index.html     ← Main UI (both pages)
-    ├── style.css      ← Full styling
-    └── script.js      ← All frontend logic
+    ├── index.html
+    ├── style.css
+    └── script.js
 ```
 
-## Setup & Run
-
+## Setup
 ```bash
-# Install dependencies
 npm install
-
-# Start (production)
-npm start
-
-# Start (dev with auto-reload)
-npm run dev
+npm start        # http://localhost:3000
+npm run dev      # auto-reload with nodemon
 ```
 
-Server runs at: **http://localhost:3000**
-
-## Features
-- 🥷 Follow gate (WhatsApp channel lock)
-- ⚡ Guerrilla Mail page — all 8 domains, real name username generation
-- 🌐 Mail.tm page — all available domains, persistent mailbox
-- 👤 Real people first/last names (200+ names from 20+ cultures)
-- 🔄 Auto-poll inbox every 5–6 seconds
-- 📬 Email viewer with HTML rendering
-- 🗑 Delete emails
-- 📋 Copy email address
-- 👥 Visitor counter
-- ✨ Particle animation, glitch effects, scanlines
+## What's fixed in v3.1
+- node-fetch v2 (CommonJS) — no dynamic import errors
+- Mail.tm: correct POST /accounts → POST /token flow
+- GM: all 8 domains work, random domain per generate
+- New US name generated on every single Generate click
+- Particles paused when tab hidden (no CPU waste)
+- Name fields are read-only (auto-filled, looks natural)
